@@ -1,0 +1,37 @@
+@startuml mutual funds cron recurring
+
+participant "cron-recurring" as cron
+collections "recurrings" as recs
+queue "Kafka Recurring" as kafkaRec
+participant "worker-investment-recurring" as wiRec
+participant "ms-investment-transaction" as mit
+participant "WMS" as wms
+participant "Kafka Journal Request" as kafkaJournal
+collections "recurringSubscriptions" as recSubs
+
+activate cron
+cron -> cron: run every day at 4am
+cron -> recs: query nextDate=today\nstatus=ACTIVE
+cron -> kafkaRec: publish
+note right
+{ 
+    cif: String
+    referenceNo: String
+    type: MUTUAL_FUNDS_SUB
+}
+end note
+activate kafkaRec
+cron -> recs: calculate nextDate\n and update data
+deactivate cron
+kafkaRec -> wiRec: consume MF sub request
+deactivate kafkaRec
+activate wiRec
+wiRec -> mit: POST /admin/recurring-transactions
+deactivate wiRec
+activate mit
+mit -> wms: forecast sub transaction
+mit -> kafkaJournal: proceed transaction to journal posting
+mit -> recSubs: update {lastDate, lastStatus}
+deactivate mit
+
+@enduml

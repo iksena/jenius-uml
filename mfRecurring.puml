@@ -1,0 +1,61 @@
+@startuml mutual funds recurring
+
+participant "ms-gql" as mg
+participant "ms-investment-transaction" as mit
+collections "recurringSubscriptions" as recSubs
+participant "ms-recurring" as mr
+collections "recurrings" as recs
+
+activate mg
+mg -> mit: POST /instructions
+note left
+{ 
+    frequency: ONCE/DAILY/WEEKLY/MONTHLY
+    endState: DATE/QUANTITY/NONE
+    startDate: Date
+    endDate: Date///unset//
+    quantity: Number///unset//
+    productCode: String
+    goalCode: String
+    amount: Number
+}
+end note
+activate mit
+mit -> mr: POST /instructions
+activate mr
+mr -> mr: calculate nextDate
+mr -> recs: insert recurring
+note right
+{ 
+    cif: String
+    referenceNo: String
+    frequency: ONCE/DAILY/WEEKLY/MONTHLY
+    endState: DATE/QUANTITY/NONE
+    startDate: Date
+    endDate: Date///unset//
+    quantity: Number///unset//
+    status: ACTIVE/PAUSED/DELETED/COMPLETED
+    sequence: Number///unset//
+    nextDate: Date
+    type: MUTUAL_FUNDS_SUB
+}
+end note
+mr --> mit: return inserted data
+deactivate mr
+mit-> recSubs: insert recurring subscription
+note right
+{ 
+    cif: String
+    referenceNo: String
+    productCode: String
+    goalCode: String
+    amount: Number
+    lastDate: Date///unset//
+    lastStatus: FAILED/SUCCESS///unset//
+}
+end note
+mit --> mg: return detailed recurring data
+deactivate mit
+deactivate mg
+
+@enduml

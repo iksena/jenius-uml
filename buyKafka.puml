@@ -1,0 +1,60 @@
+@startuml buy transaction
+participant "ms-investment-transaction" as mit
+queue "MDW\nKafka Journal Posting" as mdw
+queue "MDW\nKafka Journal Response" as mdwRes
+participant "worker-investment-journal" as wtj
+queue "j2notify" as kafkaNotify
+queue "WMS\nKafka Transaction Request" as kafkaTrx
+queue "Kafka Investment Reversal" as kafkaReversal
+queue "WMS\nKafka Transaction Status" as kafkaStatus
+participant "worker-investment-transaction" as wit
+participant "ms-investment" as mi
+collections "inflightTransactions" as inflights
+collections "forecasts" as forecasts
+collections "failedTransactions" as faileds
+collections "redis-investment" as cache
+
+activate mit
+mit -> forecasts: Query forecast with checksum
+mit -> mdw: Publish journal posting to debit customer
+mit -> inflights: Insert inflightTransaction\nwith referenceNo and forecast data\nstatus: PENDING_DEBIT
+mit -> forecasts: Delete forecast
+mdwRes -> wtj: Consume journal response
+deactivate mit
+activate wtj
+alt debit success
+wtj -> kafkaTrx: Publish transaction to WMS
+wtj -> inflights: Update inflightTransaction\nwith status: PENDING 
+opt if operation failed
+wtj -> kafkaReversal: Publish reversal
+end
+else failed debit
+wtj -> inflights: Update inflightTransaction\nwith DELETED status
+wtj -> faileds: Insert failedTransaction with inflight data
+wtj -> kafkaNotify: Publish notification failed transaction
+end
+deactivate wtj
+kafkaStatus -> wit: Publish trx VERIFIED
+deactivate kafkaStatus
+activate wit
+wit -> inflights: Query inflightTransaction
+alt inflight exists (trx from Jenius app)
+wit -> inflights: Update status to VERIFIED
+wit -> forecasts: Delete forecast
+else no inflight exists (trx from branch)
+wit -> mi: GET /products/:code
+activate mi
+mi --> wit: product data
+deactivate mi
+wit -> inflights: Insert inflightTransaction \nstatus=VERIFIED\nfromBranch=true
+wit -> cache: Invalidate portfolios cache
+end
+deactivate wit
+activate kafkaStatus
+kafkaStatus -> wit: Publish trx APPROVED
+deactivate kafkaStatus
+activate wit
+wit -> inflights: Update status to APPROVED
+wit -> cache: Invalidate portfolios cache
+deactivate wit
+@enduml
