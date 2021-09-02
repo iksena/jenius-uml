@@ -10,14 +10,16 @@ activate mg
 mg -> mit: POST /instructions
 note left
 { 
-    frequency: ONCE/DAILY/WEEKLY/MONTHLY
-    endState: DATE/QUANTITY/NONE
+    frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+    endCondition: DATE/OCCURENCE/NONE
     startDate: Date
     endDate: Date///unset//
-    quantity: Number///unset//
+    targetOccurrence: Number///unset//
     productCode: String
     goalCode: String
     amount: Number
+    fee: Number
+    tax: Number
 }
 end note
 activate mit
@@ -28,16 +30,16 @@ mr -> recs: insert recurring
 note right
 { 
     cif: String
-    referenceNo: String
-    frequency: ONCE/DAILY/WEEKLY/MONTHLY
-    endState: DATE/QUANTITY/NONE
+    recurringId: String
+    frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+    endCondition: DATE/OCCURENCE/NONE
     startDate: Date
     endDate: Date///unset//
-    quantity: Number///unset//
-    status: ACTIVE/PAUSED/DELETED/COMPLETED
-    sequence: Number///unset//
+    targetOccurrence: Number///unset//
+    status: ACTIVE/PAUSED
+    occurrence: Number///unset//
     nextDate: Date
-    type: MUTUAL_FUNDS_SUB
+    processingCode: MUTUAL_FUNDS_SUB
 }
 end note
 mr --> mit: return inserted data
@@ -46,10 +48,12 @@ mit-> recSubs: insert recurring subscription
 note right
 { 
     cif: String
-    referenceNo: String
+    recurringId: String
     productCode: String
     goalCode: String
     amount: Number
+    fee: Number
+    tax: Number
     lastDate: Date///unset//
     lastStatus: FAILED/SUCCESS///unset//
 }

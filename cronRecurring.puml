@@ -3,35 +3,48 @@
 participant "cron-recurring" as cron
 collections "recurrings" as recs
 queue "Kafka Recurring" as kafkaRec
-participant "worker-investment-recurring" as wiRec
+participant "worker-recurring" as wiRec
+collections "recurringConfig" as configs
+participant "ms-recurring" as mr
 participant "ms-investment-transaction" as mit
 participant "WMS" as wms
 participant "Kafka Journal Request" as kafkaJournal
 collections "recurringSubscriptions" as recSubs
 
 activate cron
-cron -> cron: run every day at 4am
+cron -> cron: run every day\n at 4am & 9am
 cron -> recs: query nextDate=today\nstatus=ACTIVE
 cron -> kafkaRec: publish
 note right
 { 
     cif: String
-    referenceNo: String
-    type: MUTUAL_FUNDS_SUB
+    recurringId: String
+    processingCode: MUTUAL_FUNDS_SUB
 }
 end note
 activate kafkaRec
-cron -> recs: calculate nextDate\n and update data
 deactivate cron
 kafkaRec -> wiRec: consume MF sub request
 deactivate kafkaRec
 activate wiRec
+wiRec -> mr: GET /admin/recurring-calculation\n calculate nextDate
+activate mr
+mr --> wiRec: nextDate, nextStatus
+deactivate mr
+wiRec -> configs: query config to map processingCode
 wiRec -> mit: POST /admin/recurring-transactions
-deactivate wiRec
 activate mit
+wiRec -> mr: PATCH /admin/recurrings
+deactivate wiRec
+activate mr
+mr -> recs: Update nextDate
+deactivate mr
 mit -> wms: forecast sub transaction
 mit -> kafkaJournal: proceed transaction to journal posting
 mit -> recSubs: update {lastDate, lastStatus}
+alt nextStatus=COMPLETED
+mit -> recSubs: delete data
+end
 deactivate mit
 
 @enduml
