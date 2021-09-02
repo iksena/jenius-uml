@@ -1,20 +1,23 @@
 @startuml mutual funds cron recurring
 
 participant "cron-recurring" as cron
-collections "recurrings" as recs
+participant "ms-recurring" as mr
+collections "instructions" as instructions
 queue "Kafka Recurring" as kafkaRec
 participant "worker-recurring" as wiRec
 collections "recurringConfig" as configs
-participant "ms-recurring" as mr
 participant "ms-investment-transaction" as mit
 participant "WMS" as wms
 participant "Kafka Journal Request" as kafkaJournal
-collections "recurringSubscriptions" as recSubs
+collections "productInstructions" as recSubs
 
 activate cron
 cron -> cron: run every day\n at 4am & 9am
-cron -> recs: query nextDate=today\nstatus=ACTIVE
-cron -> kafkaRec: publish
+cron -> mr: POST /admin/actions/execute
+deactivate cron
+activate mr
+mr -> instructions: query\n nextDate=today\n status=ACTIVE
+mr -> kafkaRec: publish
 note right
 { 
     cif: String
@@ -22,28 +25,27 @@ note right
     processingCode: MUTUAL_FUNDS_SUB
 }
 end note
+mr -> mr: if ⏱ exceeds 60m then stop
+deactivate mr
 activate kafkaRec
-deactivate cron
 kafkaRec -> wiRec: consume MF sub request
 deactivate kafkaRec
 activate wiRec
-wiRec -> mr: GET /admin/recurring-calculation\n calculate nextDate
+wiRec -> mr: GET /admin/instructions/status\n calculate executeDate
 activate mr
-mr --> wiRec: nextDate, nextStatus
+mr --> wiRec: executeDate, nextStatus
 deactivate mr
 wiRec -> configs: query config to map processingCode
 wiRec -> mit: POST /admin/recurring-transactions
 activate mit
-wiRec -> mr: PATCH /admin/recurrings
+wiRec -> instructions: Update executeDate
 deactivate wiRec
-activate mr
-mr -> recs: Update nextDate
-deactivate mr
 mit -> wms: forecast sub transaction
 mit -> kafkaJournal: proceed transaction to journal posting
-mit -> recSubs: update {lastDate, lastStatus}
 alt nextStatus=COMPLETED
 mit -> recSubs: delete data
+else
+mit -> recSubs: update {lastDate, lastStatus}
 end
 deactivate mit
 

@@ -2,9 +2,9 @@
 
 participant "ms-gql" as mg
 participant "ms-investment-transaction" as mit
-collections "recurringSubscriptions" as recSubs
+collections "productInstructions" as recSubs
 participant "ms-recurring" as mr
-collections "recurrings" as recs
+collections "instructions" as recs
 
 activate mg
 mg -> mit: POST /instructions
@@ -23,10 +23,12 @@ note left
 }
 end note
 activate mit
+mit -> mit: verify stepup
 mit -> mr: POST /instructions
 activate mr
-mr -> mr: calculate nextDate
-mr -> recs: insert recurring
+mr -> mr: verify stepup
+mr -> mr: calculate executeDate
+mr -> recs: insert instruction
 note right
 { 
     cif: String
@@ -38,7 +40,7 @@ note right
     targetOccurrence: Number///unset//
     status: ACTIVE/PAUSED
     occurrence: Number///unset//
-    nextDate: Date
+    executeDate: Date
     processingCode: MUTUAL_FUNDS_SUB
 }
 end note
