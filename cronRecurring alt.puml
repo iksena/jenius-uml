@@ -1,0 +1,40 @@
+@startuml mutual funds cron recurring alt
+
+participant "cron-recurring" as cron
+queue "Kafka \nRecurring Instruction" as kafka
+participant "worker-recurring-instructor" as wri
+collections "recurringConfig" as configs
+collections "instructions" as instructions
+participant "ms-recurring" as mr
+participant "ms-investment-transaction" as mit
+participant "WMS" as wms
+participant "Kafka Journal Request" as kafkaJournal
+collections "productInstructions" as recSubs
+
+activate cron
+cron -> cron: run every day\n at 4am & 9am
+cron -> kafka: publish tick
+deactivate cron
+activate wri
+wri -> kafka: consume tick
+wri -> configs: query config
+wri -> instructions: query\n nextDate=today\n status=ACTIVE
+wri -> mr: GET /admin/instructions/status\n calculate executeDate
+activate mr
+mr --> wri: executeDate, nextStatus
+deactivate mr
+wri -> mit: POST /admin/recurring-transactions
+activate mit
+wri -> instructions: Update executeDate
+wri -> wri: if ⏱ exceeds 60m then stop
+deactivate wri
+mit -> wms: forecast sub transaction
+mit -> kafkaJournal: proceed transaction to journal posting
+alt nextStatus=COMPLETED
+mit -> recSubs: delete data
+else
+mit -> recSubs: update {lastDate, lastStatus}
+end
+deactivate mit
+
+@enduml

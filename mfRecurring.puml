@@ -36,12 +36,17 @@ note right
     frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
     endCondition: DATE/OCCURENCE/NONE
     startDate: Date
-    endDate: Date///unset//
-    targetOccurrence: Number///unset//
+    endDate?: Date
+    targetOccurrence?: Number
     status: ACTIVE/PAUSED
-    occurrence: Number///unset//
+    occurrence?: Number
     executeDate: Date
     processingCode: MUTUAL_FUNDS_SUB
+    histories: Array {
+        executedAt: Date
+        status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
+    }
+    isProcessing: Boolean
 }
 end note
 mr --> mit: return inserted data
@@ -56,8 +61,10 @@ note right
     amount: Number
     fee: Number
     tax: Number
-    lastDate: Date///unset//
-    lastStatus: FAILED/SUCCESS///unset//
+    histories: Array {
+        executedAt: Date
+        status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
+    }
 }
 end note
 mit --> mg: return detailed recurring data
