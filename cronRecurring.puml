@@ -8,9 +8,9 @@ participant "worker-recurring-investment" as wri
 collections "instructionConfigurations" as configs
 participant "ms-investment-transaction" as mit
 participant "WMS" as wms
-queue "ID.INVESTMENT.TRANSACTION.JOURNAL.REQUEST" as kafkaJournal
+queue "ID.JENIUS.INVESTMENT.JOURNAL.REQUEST" as kafkaJournal
 collections "productInstructions" as recSubs
-queue "ID.INVESTMENT.RECURRING.RESPONSE" as kafkaRecRes
+queue "ID.JENIUS.INVESTMENT.RECURRING.RESPONSE" as kafkaRecRes
 participant "worker-recurring-response" as wrr
 
 activate cron
@@ -50,8 +50,6 @@ mit -> kafkaJournal: proceed transaction to journal posting
 mit -> mit: calculate next executeDate
 alt if executeDate=null (instruction completed)
 mit -> recSubs: Delete data
-else
-mit -> recSubs: Append histories: [{executedAt, status}]
 end
 mit -> kafkaRecRes: Publish recurring response
 note right 

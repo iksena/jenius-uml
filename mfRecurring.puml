@@ -13,8 +13,8 @@ note left
     frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
     endCondition: DATE/OCCURENCE/NONE
     startDate: Date
-    endDate: Date///unset//
-    targetOccurrence: Number///unset//
+    endDate?: Date
+    targetOccurrence?: Number
     productCode: String
     goalCode: String
     amount: Number
@@ -25,9 +25,23 @@ end note
 activate mit
 mit -> mit: verify stepup
 mit -> mr: POST /instructions
+note right
+{ 
+    frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+    endCondition: DATE/OCCURENCE/NONE
+    startDate: Date
+    endDate?: Date
+    targetOccurrence?: Number
+    amount: Number
+    imageUri: String
+    name: String
+    beneficiaryName: String
+    amount: Number
+    category: String
+}
+end note
 activate mr
-mr -> mr: verify stepup
-mr -> mr: calculate executeDate
+mr -> mr: executeDate = startDate
 mr -> recs: insert instruction
 note right
 { 
@@ -42,11 +56,18 @@ note right
     occurrence?: Number
     executeDate: Date
     processingCode: MUTUAL_FUNDS_SUB
-    histories: Array {
+    isProcessing: Boolean
+    histories?: Array<{
         executedAt: Date
         status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
-    }
-    isProcessing: Boolean
+    }>
+    imageUri: String
+    name: String
+    beneficiaryName: String
+    amount: Number
+    category: String
+    createdAt: Date
+    modifiedAt: Date
 }
 end note
 mr --> mit: return inserted data
@@ -61,10 +82,8 @@ note right
     amount: Number
     fee: Number
     tax: Number
-    histories: Array {
-        executedAt: Date
-        status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
-    }
+    createdAt: Date
+    modifiedAt: Date
 }
 end note
 mit --> mg: return detailed recurring data
