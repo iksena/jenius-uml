@@ -38,6 +38,7 @@ note right
     beneficiaryName: String
     amount: Number
     category: String
+    processingCode: MUTUAL_FUNDS_SUB
 }
 end note
 activate mr

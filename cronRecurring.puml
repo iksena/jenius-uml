@@ -3,14 +3,14 @@
 participant "cron-recurring" as cron
 participant "ms-eod-status" as eod
 collections "instructions" as instr
-queue "ID.JENIUS.RECURRING.MUTUAL_FUNDS_SUB" as kafkaRec
+queue "ID.JENIUS.RECURRING.INSTRUCTIONS.MUTUAL_FUNDS_SUB" as kafkaRec
 participant "worker-recurring-investment" as wri
 collections "instructionConfigurations" as configs
 participant "ms-investment-transaction" as mit
 participant "WMS" as wms
 queue "ID.JENIUS.INVESTMENT.JOURNAL.REQUEST" as kafkaJournal
 collections "productInstructions" as recSubs
-queue "ID.JENIUS.INVESTMENT.RECURRING.RESPONSE" as kafkaRecRes
+queue "ID.JENIUS.RECURRING.RESPONSE.MUTUAL_FUNDS_SUB" as kafkaRecRes
 participant "worker-recurring-response" as wrr
 
 activate cron

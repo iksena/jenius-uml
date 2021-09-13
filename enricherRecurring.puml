@@ -1,0 +1,32 @@
+@startuml mutual funds cron recurring
+
+queue "ID.JENIUS.RECURRING.ENRICHER.MUTUAL_FUNDS_SUB" as kafkaEnrich
+participant "worker-recurring-enricher-investment" as wre
+participant "ms-investment-transaction" as mit
+participant "ms-investment" as mi
+collections "instructions" as instr
+
+
+activate kafkaEnrich
+kafkaEnrich -> wre: Consume enrich instruction
+note right
+{
+    recurringId: String
+    processingCode: MUTUAL_FUNDS_SUB
+}
+end note
+deactivate kafkaEnrich
+activate wre
+wre -> mit: GET /admin/instructions/:recurringId
+activate mit
+mit --> wre: return productCode, goalCode
+deactivate mit
+wre -> mi: GET /admin/products/:productCode
+activate mi
+wre -> mi: GET /admin/portfolios/:goalCode
+mi --> wre: return imageUri, name, portfolioName
+deactivate mi
+wre -> instr: Update with enriched data
+deactivate wre
+
+@enduml
