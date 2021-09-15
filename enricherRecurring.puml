@@ -1,7 +1,7 @@
 @startuml mutual funds cron recurring
 
-queue "ID.JENIUS.RECURRING.ENRICHER.MUTUAL_FUNDS_SUB" as kafkaEnrich
-participant "worker-recurring-enricher-investment" as wre
+queue "ID.JENIUS.RECURRING.ENRICHER.INSTRUCTIONS" as kafkaEnrich
+participant "worker-recurring-enricher" as wre
 participant "ms-investment-transaction" as mit
 participant "ms-investment" as mi
 collections "instructions" as instr

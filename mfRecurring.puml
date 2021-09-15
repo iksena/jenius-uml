@@ -1,13 +1,33 @@
 @startuml mutual funds recurring
 
+participant "jenius2-apps" as app
 participant "ms-gql" as mg
 participant "ms-investment-transaction" as mit
+collections "forecasts" as forecasts
 collections "productInstructions" as recSubs
 participant "ms-recurring" as mr
 collections "instructions" as recs
 
+activate app
+app -> mg: forecastInvestmentTransaction
+note left
+{
+    productCode: String
+    currency: String
+    type: SUB
+    amount: Number
+    goalCode: String
+}
+end note
 activate mg
-mg -> mit: POST /instructions
+mg -> mit: POST /forecast
+activate mit
+mit -> forecasts: insert forecast with 10mins expiry
+mit --> mg: return forecastChecksum
+mg --> app: return forecastChecksum
+deactivate mit
+deactivate mg
+app -> mg: createMutualFundsInstruction
 note left
 { 
     frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
@@ -15,17 +35,16 @@ note left
     startDate: Date
     endDate?: Date
     targetOccurrence?: Number
-    productCode: String
-    goalCode: String
-    amount: Number
-    fee: Number
-    tax: Number
+    forecastChecksum: String
 }
 end note
+activate mg
+mg -> mit: POST /instructions
 activate mit
 mit -> mit: verify stepup
+mit -> forecasts: query forecast with checksum
 mit -> mr: POST /instructions
-note right
+note left
 { 
     frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
     endCondition: DATE/OCCURENCE/NONE
@@ -73,13 +92,17 @@ note right
 end note
 mr --> mit: return inserted data
 deactivate mr
-mit-> recSubs: insert recurring subscription
+mit-> recSubs: insert product instruction\nfrom forecast data
 note right
 { 
+    source: String
     cif: String
     recurringId: String
     productCode: String
+    productName: String
+    productGLAccount: String
     goalCode: String
+    currency: String
     amount: Number
     fee: Number
     tax: Number
@@ -87,8 +110,10 @@ note right
     modifiedAt: Date
 }
 end note
-mit --> mg: return detailed recurring data
+mit --> mg: return detailed instruction
 deactivate mit
+mg --> app: return detailed instruction
 deactivate mg
+deactivate app
 
 @enduml
