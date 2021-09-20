@@ -3,14 +3,17 @@
 participant "cron-recurring" as cron
 participant "ms-eod-status" as eod
 collections "instructions" as instr
-queue "ID.JENIUS.RECURRING.INSTRUCTIONS.MUTUAL_FUNDS_SUB" as kafkaRec
+queue "ID.JENIUS.RECURRING.INSTRUCTIONS.MUTUAL_FUNDS" as kafkaRec
 participant "worker-recurring-investment" as wri
 collections "instructionConfigurations" as configs
 participant "ms-investment-transaction" as mit
-participant "WMS" as wms
+collections "productInstructions" as prodIns
+collections "inflightTransactions" as inflights
 queue "ID.JENIUS.INVESTMENT.JOURNAL.REQUEST" as kafkaJournal
-collections "productInstructions" as recSubs
-queue "ID.JENIUS.RECURRING.RESPONSE.MUTUAL_FUNDS_SUB" as kafkaRecRes
+queue "ID.JENIUS.INVESTMENT.JOURNAL.RESPONSE" as kafkaJournalRes
+participant "worker-investment-journal" as wij
+queue "ID.JENIUS.INVESTMENT.TRANSACTION.REQUEST" as kafkaWms
+queue "ID.JENIUS.RECURRING.RESPONSE.MUTUAL_FUNDS" as kafkaRecRes
 participant "worker-recurring-response" as wrr
 
 activate cron
@@ -33,10 +36,14 @@ note right
     endDate?: Date
     targetOccurrence?: Number
     occurrence: Number
+    shouldUpdateStatus: Boolean
 }
 end note
 activate kafkaRec
 cron -> instr: bulk update isProcessing=true
+alt if publish FAILED
+cron -> cron: delay for 5s and retry 3 times
+end
 deactivate cron
 kafkaRec -> wri: consume MF sub request
 deactivate kafkaRec
@@ -45,13 +52,42 @@ wri -> configs: query config to map processingCode
 wri -> mit: POST /admin/recurring-transactions
 deactivate wri
 activate mit
-mit -> wms: forecast sub transaction
+mit -> prodIns: query by recurringId
+mit -> inflights: map data and insert inflight
+note right
+{ 
+    source: String
+    cif: String
+    productCode: String
+    productName: String
+    productGLAccount: String
+    goalCode: String
+    currency: String
+    amount: Number
+    fee: Number
+    tax: Number
+    instruction: {
+        recurringId: String
+        frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+        endCondition: DATE/OCCURENCE/NONE
+        startDate: Date
+        endDate?: Date
+        targetOccurrence?: Number
+    }
+    createdAt: Date
+    modifiedAt: Date
+}
+end note
 mit -> kafkaJournal: proceed transaction to journal posting
-mit -> mit: calculate next executeDate
-alt if executeDate=null (instruction completed)
-mit -> recSubs: Delete data
+deactivate mit
+kafkaJournalRes -> wij: Consume journal response
+activate wij
+wij -> kafkaWms: Publish transaction to WMS
+wij -> wij: calculate next executeDate
+alt if nextStatus=COMPLETED (instruction completed)
+wij -> prodIns: update status, expiredAt
 end
-mit -> kafkaRecRes: Publish recurring response
+wij -> kafkaRecRes: Publish recurring response
 note right 
 {
     cif: String
@@ -59,9 +95,10 @@ note right
     executedAt: Date
     status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
     nextExecuteDate: Date
+    nextStatus: ACTIVE/PAUSED/COMPLETED
 }
 end note
-deactivate mit
+deactivate wij
 activate kafkaRecRes
 kafkaRecRes -> wrr: Consume recurring response
 deactivate kafkaRecRes
@@ -69,7 +106,7 @@ activate wrr
 alt if executeDate=null (instruction completed)
 wrr -> instr: Delete data
 else
-wrr -> instr: Update executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status}]
+wrr -> instr: Update status, executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status}]
 end
 deactivate wrr
 
