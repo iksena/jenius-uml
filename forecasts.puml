@@ -1,0 +1,118 @@
+@startuml buy transaction
+participant "ms-gql" as mg
+participant "ms-investment-transaction" as mit
+participant "ms-accounts" as ma
+participant "ms-investment" as mi
+participant "WMS\nInquiryFeeTax" as wms
+collections "forecasts" as forecasts
+
+activate mg
+mg -> mit: POST /forecasts
+note left
+{
+    productCode: String
+    currency: String
+    type: SUB/RED/SWT
+    goalCode?: String
+    amount?: Number
+    units?: Number
+    subAccount?: String
+    isRedeemAll: Boolean
+}
+end note
+activate mit
+mit -> ma: GET /accounts/:id/validation
+activate ma
+ma --> mit: filter accountNo based on currency
+deactivate ma
+mit -> mi: GET /active-products/:productCode
+activate mi
+mi --> mit: productName, imageUri, assetClass,\nminSubs, minRedUnit
+deactivate mi
+mit -> wms: POST /InquiryFeeTax
+note left
+{
+    cIF: String
+    transactionCategory: SUB/RED
+    custBankAccountNo: String
+    productCode: String
+    _TransactionValue: [
+        {
+            IsRedeemAll: 1/0
+            NetAmount: Number
+            Units: Number
+            InvAccountNo: String
+        }
+    ]
+}
+end note
+activate wms
+wms --> mit: forecast response
+note left
+{
+  ErrorCode: String
+  IsSuccess: Boolean
+  Message: String
+  ResponseCode: null
+  SolutionCode: null
+  Result: {
+    CIF: String
+    Currency: String
+    CustBankAccountNo: String
+    IsAfter: Boolean
+    NAVDate: String
+    NAVPerUnit: Number
+    ProdBankAccountNo: String
+    ProductCode: String
+    ProductCodeTo: String
+    TotalAmount: Number
+    TotalFeeAmount: Number
+    TotalNetAmount: Number
+    TotalTaxAmount: Number
+    TransactionCategory: SUB/RED,
+    _TaxFeeListOut: [
+      {
+        Amount: Number
+        FeeAmount: Number
+        InvAccountNo: String
+        NetAmount: Number
+        TaxAmount: Number
+      }
+    ]
+  }
+}
+end note
+deactivate wms
+mit -> forecasts: insert forecast
+note right
+{
+    _id: ObjectId
+    source: String
+    cif: String
+    referenceNo: String
+    type: SUB/RED
+    currency: IDR/USD
+    navPerUnit: Number
+    productCode: String
+    amount: Number
+    fee: Number
+    tax: Number
+    subAccount: String
+    productGLAccount: String
+    isRedeemAll?: Boolean
+    goalCode?: String
+    units?: Number
+    productName: String
+    imageUri: String
+    assetClass: String
+    minSubs: Number
+    minRedUnit: Number
+    expiredAt: Date
+    createdAt: Date
+    modifiedAt: Date
+}
+end note
+mit --> mg: return forecast with checksum from _id
+deactivate mit
+deactivate mg
+@enduml
