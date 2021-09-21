@@ -1,0 +1,72 @@
+@startuml get mutual funds instruction
+
+participant "jenius2-apps" as app
+participant "ms-gql" as mg
+participant "ms-investment-transaction" as mit
+collections "productInstructions" as prodIns
+participant "ms-recurring" as mr
+collections "instructions" as ins
+
+activate app
+app -> mg: getMutualFundsInstruction
+activate mg
+mg -> mit: GET /instructions/:recurringId
+activate mit
+mit -> mr: GET /instructions/:recurringId
+activate mr
+mr --> mit: return instruction
+note right
+{ 
+    cif: String
+    recurringId: String
+    frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+    endCondition: DATE/OCCURENCE/NONE
+    startDate: Date
+    endDate?: Date
+    targetOccurrence?: Number
+    status: ACTIVE/PAUSED
+    occurrence?: Number
+    executeDate: Date
+    processingCode: MUTUAL_FUNDS_SUB
+    isProcessing: Boolean
+    histories?: Array<{
+        executedAt: Date
+        status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
+    }>
+    imageUri: String
+    name: String
+    beneficiaryName: String
+    amount: Number
+    category: String
+    createdAt: Date
+    modifiedAt: Date
+}
+end note
+deactivate mr
+mit -> prodIns: query product instruction
+prodIns --> mit: return product instruction
+note right
+{ 
+    source: String
+    cif: String
+    recurringId: String
+    productCode: String
+    productName: String
+    productGLAccount: String
+    goalCode: String
+    currency: String
+    amount: Number
+    fee: Number
+    tax: Number
+    createdAt: Date
+    modifiedAt: Date
+}
+end note
+mit -> mit: combine data
+mit --> mg: return detailed instruction
+deactivate mit
+mg --> app: return detailed instruction
+deactivate mg
+deactivate app
+
+@enduml

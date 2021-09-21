@@ -105,8 +105,6 @@ note right
     productName: String
     imageUri: String
     assetClass: String
-    minSubs: Number
-    minRedUnit: Number
     expiredAt: Date
     createdAt: Date
     modifiedAt: Date
