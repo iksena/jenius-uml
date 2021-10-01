@@ -24,6 +24,7 @@ cron -> cron: end process
 end
 cron -> instr: query executeDate=today\nstatus=ACTIVE\nisProcessing=false\nprocessingCode=MUTUAL_FUNDS_SUB
 cron -> cron: map instructions to messages
+cron -> cron: shouldUpdateStatus = if last tick in a day
 cron -> kafkaRec: bulk publish instruction messages
 note right
 { 
@@ -40,16 +41,30 @@ note right
 }
 end note
 activate kafkaRec
-cron -> instr: bulk update isProcessing=true
-alt if publish FAILED
+opt if publish FAILED
 cron -> cron: delay for 5s and retry 3 times
+end
+opt if still failed and shouldUpdateStatus=true
+cron -> cron: alert JPS?
 end
 deactivate cron
 kafkaRec -> wri: consume MF sub request
 deactivate kafkaRec
 activate wri
+wri -> instr: update isProcessing=true
 wri -> configs: query config to map processingCode
+note right
+processingCode: MUTUAL_FUNDS_SUB
+path: /admin/recurring-transactions
+method: POST
+end note
 wri -> mit: POST /admin/recurring-transactions
+opt if failed but retry-able
+wri -> wri: delay for 5s and retry 3 times
+end
+opt if still failed
+wri -> instr: update isProcessing=true and append histories
+end
 deactivate wri
 activate mit
 mit -> prodIns: query by recurringId
@@ -73,6 +88,8 @@ note right
         startDate: Date
         endDate?: Date
         targetOccurrence?: Number
+        occurence: Number
+        shouldUpdateStatus: Boolean
     }
     createdAt: Date
     modifiedAt: Date
@@ -104,7 +121,7 @@ kafkaRecRes -> wrr: Consume recurring response
 deactivate kafkaRecRes
 activate wrr
 alt if executeDate=null (instruction completed)
-wrr -> instr: Delete data
+wrr -> instr: Delete data/update expiredAt
 else
 wrr -> instr: Update status, executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status}]
 end

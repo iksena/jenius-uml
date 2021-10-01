@@ -1,0 +1,31 @@
+@startuml instruction
+
+map Instruction {
+  cif: String
+  recurringId: String
+  frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+  endCondition: DATE/OCCURENCE/NONE
+  startDate: Date
+  endDate?: Date
+  targetOccurrence?: Number
+  status: ACTIVE/PAUSED
+  occurrence?: Number
+  executeDate: Date
+  processingCode: MUTUAL_FUNDS_SUB
+  isProcessing: Boolean
+  histories *-> InstructionHistory
+  imageUri: String
+  name: String
+  beneficiaryName: String
+  amount: Number
+  category: String
+  createdAt: Date
+  modifiedAt: Date
+}
+
+object InstructionHistory {
+  executedAt: Date
+  status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
+}
+
+@enduml

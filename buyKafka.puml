@@ -1,12 +1,12 @@
 @startuml buy transaction
 participant "ms-investment-transaction" as mit
-queue "MDW\nKafka Journal Posting" as mdw
-queue "MDW\nKafka Journal Response" as mdwRes
+queue "ID.JENIUS.INVESTMENT.JOURNAL.REQUEST" as mdw
+queue "ID.JENIUS.INVESTMENT.JOURNAL.RESPONSE" as mdwRes
 participant "worker-investment-journal" as wtj
 queue "j2notify" as kafkaNotify
-queue "WMS\nKafka Transaction Request" as kafkaTrx
-queue "Kafka Investment Reversal" as kafkaReversal
-queue "WMS\nKafka Transaction Status" as kafkaStatus
+queue "ID.JENIUS.INVESTMENT.TRANSACTION.REQUEST" as kafkaTrx
+queue "ID.JENIUS.INVESTMENT.REVERSAL" as kafkaReversal
+queue "ID.JENIUS.INVESTMENT.TRANSACTION.STATUS" as kafkaStatus
 participant "worker-investment-transaction" as wit
 participant "ms-investment" as mi
 collections "inflightTransactions" as inflights
