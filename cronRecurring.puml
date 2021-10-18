@@ -3,9 +3,9 @@
 participant "cron-recurring" as cron
 participant "ms-eod-status" as eod
 collections "instructions" as instr
+collections "ignoredInstructions" as ignoreds
 queue "ID.JENIUS.RECURRING.INSTRUCTIONS.MUTUAL_FUNDS" as kafkaRec
 participant "worker-recurring-investment" as wri
-collections "instructionConfigurations" as configs
 participant "ms-investment-transaction" as mit
 collections "productInstructions" as prodIns
 collections "inflightTransactions" as inflights
@@ -13,7 +13,7 @@ queue "ID.JENIUS.INVESTMENT.JOURNAL.REQUEST" as kafkaJournal
 queue "ID.JENIUS.INVESTMENT.JOURNAL.RESPONSE" as kafkaJournalRes
 participant "worker-investment-journal" as wij
 queue "ID.JENIUS.INVESTMENT.TRANSACTION.REQUEST" as kafkaWms
-queue "ID.JENIUS.RECURRING.RESPONSE.MUTUAL_FUNDS" as kafkaRecRes
+queue "ID.JENIUS.RECURRING.RESPONSE" as kafkaRecRes
 participant "worker-recurring-response" as wrr
 
 activate cron
@@ -45,28 +45,25 @@ opt if publish FAILED
 cron -> cron: delay for 5s and retry 3 times
 end
 opt if still failed and shouldUpdateStatus=true
-cron -> cron: alert JPS?
+cron -> instr: update status to PAUSED and append histories {status, executedAt}
+cron -> cron: send notification
+' cron -> ignoreds: insert to ignoredInstructions
 end
 deactivate cron
 kafkaRec -> wri: consume MF sub request
 deactivate kafkaRec
 activate wri
 wri -> instr: update isProcessing=true
-wri -> configs: query config to map processingCode
-note right
-processingCode: MUTUAL_FUNDS_SUB
-path: /admin/recurring-transactions
-method: POST
-end note
 wri -> mit: POST /admin/recurring-transactions
-opt if failed but retry-able
-wri -> wri: delay for 5s and retry 3 times
-end
-opt if still failed
-wri -> instr: update isProcessing=true and append histories
-end
-deactivate wri
 activate mit
+opt if failed
+wri -> instr: update isProcessing=false
+opt if shouldUpdateStatus=true
+wri -> instr: update status to PAUSED and append histories {status, executedAt}
+wri -> wri: send notification
+end
+end
+deactivate wri 
 mit -> prodIns: query by recurringId
 mit -> inflights: map data and insert inflight
 note right
@@ -122,6 +119,7 @@ deactivate kafkaRecRes
 activate wrr
 alt if executeDate=null (instruction completed)
 wrr -> instr: Delete data/update expiredAt
+wrr -> wrr: send notification completed
 else
 wrr -> instr: Update status, executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status}]
 end

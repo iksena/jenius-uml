@@ -1,0 +1,48 @@
+@startuml upcoming list
+
+participant "jenius2-apps" as app
+participant "ms-gql" as mg
+participant "ms-recurring" as mit
+collections "instructions" as ins
+
+activate app
+app -> mg: instructions
+activate mg
+mg -> mit: GET /instructions\nwith cif
+activate mit
+mit -> ins: query by cif
+ins --> mit: return instructions
+note right
+[{
+    cif: String
+    recurringId: String
+    frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+    endCondition: DATE/OCCURENCE/NONE
+    startDate: Date
+    endDate?: Date
+    targetOccurrence?: Number
+    status: ACTIVE/PAUSED
+    occurrence?: Number
+    executeDate: Date
+    processingCode: MUTUAL_FUNDS_SUB
+    isProcessing: Boolean
+    histories?: Array<{
+        executedAt: Date
+        status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
+    }>
+    imageUri: String
+    name: String
+    beneficiaryName: String
+    amount: Number
+    category: String
+    createdAt: Date
+    modifiedAt: Date
+}]
+end note
+mit --> mg: return instructions list
+deactivate mit
+mg --> app: return instructions list
+deactivate mg
+deactivate app
+
+@enduml

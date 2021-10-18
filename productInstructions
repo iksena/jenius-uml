@@ -1,0 +1,38 @@
+@startuml get mutual funds instructions
+
+participant "jenius2-apps" as app
+participant "ms-gql" as mg
+participant "ms-investment-transaction" as mit
+collections "productInstructions" as pi
+
+activate app
+app -> mg: investmentProductInstructions($goalCode)\n{ goalCode?: String }
+activate mg
+mg -> mit: GET /instructions?goalCode=
+activate mit
+mit -> pi: query by cif and goalCode
+pi --> mit: return productInstructions
+note right
+[{ 
+    source: String
+    cif: String
+    recurringId: String
+    productCode: String
+    productName: String
+    productGLAccount: String
+    goalCode: String
+    currency: String
+    amount: Number
+    fee: Number
+    tax: Number
+    createdAt: Date
+    modifiedAt: Date
+}]
+end note
+mit --> mg: return product instructions list
+deactivate mit
+mg --> app: return product instructions list
+deactivate mg
+deactivate app
+
+@enduml

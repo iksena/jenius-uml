@@ -1,32 +1,49 @@
 @startuml mutual funds cron recurring
 
-queue "ID.JENIUS.RECURRING.ENRICHER.INSTRUCTIONS" as kafkaEnrich
-participant "worker-recurring-enricher" as wre
+participant "cron-recurring-enricher" as cre
 participant "ms-investment-transaction" as mit
 participant "ms-investment" as mi
 collections "instructions" as instr
 
-
-activate kafkaEnrich
-kafkaEnrich -> wre: Consume enrich instruction
+activate cre
+cre -> cre: Run on 1, 3, 5am everyday
+cre -> instr: query by enrichedAt ascending
+cre -> mit: GET /admin/instructions/:recurringId
 note right
-{
+{ 
+    source: String
+    cif: String
     recurringId: String
-    processingCode: MUTUAL_FUNDS_SUB
+    productCode: String
+    productName: String
+    productGLAccount: String
+    goalCode: String
+    currency: String
+    amount: Number
+    fee: Number
+    tax: Number
+    createdAt: Date
+    modifiedAt: Date
 }
 end note
-deactivate kafkaEnrich
-activate wre
-wre -> mit: GET /admin/instructions/:recurringId
 activate mit
-mit --> wre: return productCode, goalCode
+mit --> cre: productCode, goalCode\namount, fee, tax
 deactivate mit
-wre -> mi: GET /admin/products/:productCode
+cre -> mi: GET /admin/products/:productCode
 activate mi
-wre -> mi: GET /admin/portfolios/:goalCode
-mi --> wre: return imageUri, name, portfolioName
+cre -> mi: GET /admin/portfolios/:goalCode
+mi --> cre: return imageUri, name, portfolioName
 deactivate mi
-wre -> instr: Update with enriched data
-deactivate wre
+cre -> instr: Update with enriched data
+note right
+{
+    imageUri: String
+    name: String
+    beneficiaryName: String
+    amount: Number
+    enrichedAt: Date
+}
+end note
+deactivate cre
 
 @enduml
