@@ -5,6 +5,7 @@ participant "ms-eod-status" as eod
 collections "instructions" as instr
 collections "ignoredInstructions" as ignoreds
 queue "ID.JENIUS.RECURRING.INSTRUCTIONS.MUTUAL_FUNDS" as kafkaRec
+queue "j2notify" as kafkaNotif
 participant "worker-recurring-investment" as wri
 participant "ms-investment-transaction" as mit
 collections "productInstructions" as prodIns
@@ -46,8 +47,7 @@ cron -> cron: delay for 5s and retry 3 times
 end
 opt if still failed and shouldUpdateStatus=true
 cron -> instr: update status to PAUSED and append histories {status, executedAt}
-cron -> cron: send notification
-' cron -> ignoreds: insert to ignoredInstructions
+cron -> kafkaNotif: send notification
 end
 deactivate cron
 kafkaRec -> wri: consume MF sub request
@@ -60,7 +60,7 @@ opt if failed
 wri -> instr: update isProcessing=false
 opt if shouldUpdateStatus=true
 wri -> instr: update status to PAUSED and append histories {status, executedAt}
-wri -> wri: send notification
+wri -> kafkaNotif: send notification
 end
 end
 deactivate wri 
@@ -99,7 +99,7 @@ activate wij
 wij -> kafkaWms: Publish transaction to WMS
 wij -> wij: calculate next executeDate
 alt if nextStatus=COMPLETED (instruction completed)
-wij -> prodIns: update status, expiredAt
+wij -> prodIns: add expiredAt
 end
 wij -> kafkaRecRes: Publish recurring response
 note right 
@@ -117,11 +117,10 @@ activate kafkaRecRes
 kafkaRecRes -> wrr: Consume recurring response
 deactivate kafkaRecRes
 activate wrr
-alt if executeDate=null (instruction completed)
-wrr -> instr: Delete data/update expiredAt
-wrr -> wrr: send notification completed
-else
 wrr -> instr: Update status, executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status}]
+opt if executeDate=null (instruction completed)
+wrr -> instr: Add expiredAt
+wrr -> kafkaNotif: send notification completed
 end
 deactivate wrr
 
