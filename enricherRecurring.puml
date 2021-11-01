@@ -1,14 +1,29 @@
 @startuml mutual funds cron recurring
 
-participant "cron-recurring-enricher" as cre
-participant "ms-investment-transaction" as mit
 participant "ms-investment" as mi
-collections "instructions" as instr
+queue "ID.JENIUS.RECURRING.ENRICHER.MUTUAL_FUNDS" as kafka
+participant "worker-recurring-enricher-investment" as wrei
+collections "productInstructions" as prods
+participant "ms-recurring" as instr
 
-activate cre
-cre -> cre: Run on 1, 3, 5am everyday
-cre -> instr: query by enrichedAt ascending
-cre -> mit: GET /admin/instructions/:recurringId
+activate mi
+mi -> kafka: Admin updates product\npublsh productCode, imageUri, and productName 
+mi -> kafka: Users update portfolio\npublsh goalCode and portfolioName 
+deactivate mi
+activate wrei
+kafka -> wrei: consume
+note right
+{ 
+    productCode?: String, 
+    goalCode?: String, 
+    payload?: {
+        imageUri: String
+        productName: String
+        portfolioName: String
+    }
+}
+end note
+wrei -> prods: query by \nproductCode and goalCode
 note right
 { 
     source: String
@@ -22,28 +37,26 @@ note right
     amount: Number
     fee: Number
     tax: Number
-    createdAt: Date
+    wreiatedAt: Date
     modifiedAt: Date
 }
 end note
-activate mit
-mit --> cre: productCode, goalCode\namount, fee, tax
-deactivate mit
-cre -> mi: GET /admin/products/:productCode
-activate mi
-cre -> mi: GET /admin/portfolios/:goalCode
-mi --> cre: return imageUri, name, portfolioName
-deactivate mi
-cre -> instr: Update with enriched data
+activate prods
+prods --> wrei: recurringIds: [String]
+deactivate prods
+wrei -> instr: PATCH /admin/instructions\nUpdate with enriched data
 note right
 {
-    imageUri: String
-    name: String
-    beneficiaryName: String
-    amount: Number
-    enrichedAt: Date
+    recurringIds: [String]
+    payload: {
+        imageUri: String
+        name: String
+        beneficiaryName: String
+        amount: Number
+        enrichedAt: Date
+    }
 }
 end note
-deactivate cre
+deactivate wrei
 
 @enduml
