@@ -3,10 +3,10 @@
 participant "cron-recurring" as cron
 participant "ms-eod-status" as eod
 collections "instructions" as instr
-collections "ignoredInstructions" as ignoreds
 queue "ID.JENIUS.RECURRING.INSTRUCTIONS.MUTUAL_FUNDS" as kafkaRec
 queue "j2notify" as kafkaNotif
 participant "worker-recurring-investment" as wri
+participant "ms-investment" as mi
 participant "ms-investment-transaction" as mit
 collections "productInstructions" as prodIns
 collections "inflightTransactions" as inflights
@@ -28,7 +28,7 @@ cron -> cron: map instructions to messages
 cron -> cron: shouldUpdateStatus = if last tick in a day
 cron -> kafkaRec: bulk publish instruction messages
 note right
-{ 
+{
     cif: String
     recurringId: String
     processingCode: MUTUAL_FUNDS_SUB
@@ -54,16 +54,19 @@ kafkaRec -> wri: consume MF sub request
 deactivate kafkaRec
 activate wri
 wri -> instr: update isProcessing=true
-wri -> mit: POST /admin/recurring-transactions
-activate mit
-opt if failed
+wri -> mi: GET /admin/risk-profiles
+activate mi
+mi --> wri: Risk profile with expiry date
+deactivate mi
+opt if risk profile expired
 wri -> instr: update isProcessing=false
 opt if shouldUpdateStatus=true
-wri -> instr: update status to PAUSED and append histories {status, executedAt}
+wri -> instr: update status to PAUSED and \nappend histories {status: RISK_PROFILE_EXPIRED, executedAt}
 wri -> kafkaNotif: send notification
 end
 end
-deactivate wri 
+wri -> mit: POST /admin/recurring-transactions
+activate mit
 mit -> prodIns: query by recurringId
 mit -> inflights: map data and insert inflight
 note right
@@ -93,7 +96,16 @@ note right
 }
 end note
 mit -> kafkaJournal: proceed transaction to journal posting
+mit --> wri: response accepted/failed
 deactivate mit
+opt if failed
+wri -> instr: update isProcessing=false
+opt if shouldUpdateStatus=true
+wri -> instr: update status to PAUSED and \nappend histories {status:SYSTEM_ERROR, executedAt}
+wri -> kafkaNotif: send notification
+end
+end
+deactivate wri
 kafkaJournalRes -> wij: Consume journal response
 activate wij
 wij -> kafkaWms: Publish transaction to WMS
@@ -117,7 +129,7 @@ activate kafkaRecRes
 kafkaRecRes -> wrr: Consume recurring response
 deactivate kafkaRecRes
 activate wrr
-wrr -> instr: Update status, executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status}]
+wrr -> instr: Update status, executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status: SUCCESS}]
 opt if executeDate=null (instruction completed)
 wrr -> instr: Add expiredAt
 wrr -> kafkaNotif: send notification completed

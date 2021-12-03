@@ -10,7 +10,6 @@ activate mi
 mi -> kafka: Admin updates product\npublsh productCode, imageUri, and productName 
 mi -> kafka: Users update portfolio\npublsh goalCode and portfolioName 
 deactivate mi
-activate wrei
 kafka -> wrei: consume
 note right
 { 
@@ -23,6 +22,7 @@ note right
     }
 }
 end note
+activate wrei
 wrei -> prods: query by \nproductCode and goalCode
 note right
 { 
@@ -52,8 +52,6 @@ note right
         imageUri: String
         name: String
         beneficiaryName: String
-        amount: Number
-        enrichedAt: Date
     }
 }
 end note

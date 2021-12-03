@@ -1,0 +1,88 @@
+@startuml recurring resume now
+
+participant "ms-gql" as mg
+participant "ms-investment-transaction" as mit
+participant "ms-recurring" as mr
+collections "instructions" as instr
+collections "productInstructions" as prodIns
+collections "inflightTransactions" as inflights
+queue "ID.JENIUS.INVESTMENT.JOURNAL.REQUEST" as kafkaJournal
+queue "ID.JENIUS.INVESTMENT.JOURNAL.RESPONSE" as kafkaJournalRes
+participant "worker-investment-journal" as wij
+queue "ID.JENIUS.INVESTMENT.TRANSACTION.REQUEST" as kafkaWms
+queue "ID.JENIUS.RECURRING.RESPONSE" as kafkaRecRes
+participant "worker-recurring-response" as wrr
+
+mg -> mit: POST /recurring-transactions
+activate mit
+mit -> prodIns: query by recurringId
+mit -> mr: PATCH /instructions
+note left 
+{
+    status: ACTIVE
+    isProcessing: true
+}
+end note
+activate mr
+mr -> instr: edit instruction
+mr --> mit: return instruction
+deactivate mr
+mit -> inflights: map data and insert inflight
+note right
+{ 
+    source: String
+    cif: String
+    productCode: String
+    productName: String
+    productGLAccount: String
+    goalCode: String
+    currency: String
+    amount: Number
+    fee: Number
+    tax: Number
+    instruction: {
+        recurringId: String
+        frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+        endCondition: DATE/OCCURENCE/NONE
+        startDate: Date
+        endDate?: Date
+        targetOccurrence?: Number
+        occurence: Number
+        shouldUpdateStatus: Boolean
+    }
+    createdAt: Date
+    modifiedAt: Date
+}
+end note
+mit -> kafkaJournal: proceed transaction to journal posting
+deactivate mit
+kafkaJournalRes -> wij: Consume journal response
+activate wij
+wij -> kafkaWms: Publish transaction to WMS
+wij -> wij: calculate next executeDate
+alt if nextStatus=COMPLETED (instruction completed)
+wij -> prodIns: add expiredAt
+end
+wij -> kafkaRecRes: Publish recurring response
+note right 
+{
+    cif: String
+    recurringId: String
+    executedAt: Date
+    status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
+    nextExecuteDate: Date
+    nextStatus: ACTIVE/PAUSED/COMPLETED
+}
+end note
+deactivate wij
+activate kafkaRecRes
+kafkaRecRes -> wrr: Consume recurring response
+deactivate kafkaRecRes
+activate wrr
+wrr -> instr: Update status, executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status: SUCCESS}]
+opt if executeDate=null (instruction completed)
+wrr -> instr: Add expiredAt
+end
+deactivate wrr
+
+@enduml

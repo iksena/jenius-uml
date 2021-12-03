@@ -1,0 +1,27 @@
+@startuml recurring resume next period
+
+participant "ms-gql" as mg
+participant "ms-recurring" as mr
+collections "instructions" as instr
+
+mg -> mr: POST /continue-recurring (??)
+note left 
+{
+    recurringId: String
+}
+end note
+activate mr
+mr -> instr: query instruction
+mr -> mr: calculate next status and executeDate
+mr -> instr: edit instruction
+note right 
+{
+    status: ACTIVE/COMPLETED
+    executeDate: Date
+    modifiedAt: Date
+}
+end note
+mr --> mg: return updated instruction
+deactivate mr
+
+@enduml
