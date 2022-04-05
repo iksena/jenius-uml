@@ -1,0 +1,77 @@
+@startuml portfolio
+participant "App" as app
+participant "ms-investment" as mi
+collections "portfolios" as portfolios
+participant "ms-user-preference" as mup
+collections "accounts" as accounts
+collections "redis-investment" as redis
+participant "WMS\nInquiryCustomerPortfolio" as wms
+collections "products" as products
+queue "ID.JENIUS.RECURRING.ENRICHER.MUTUAL_FUNDS" as kafkaEnricher
+
+activate app
+app -> mi: mutation createPortfolio
+note left: create portfolio
+activate mi
+mi -> portfolios: count portfolios
+mi -> mup: GET /profile\nget isPriority
+mi -> accounts: find account by cif\nget isSpecialAccount
+opt if portfolio exceed limit
+mi -> app: throw ForbiddenError
+end
+mi -> portfolios: insert {name,goalCode,image}
+mi -> redis: append new portfolio to cache
+mi -> app: return created portfolio
+deactivate mi
+
+app -> mi: PATCH /portfolios/:goalCode
+note left: edit portfolio
+activate mi
+mi -> redis: edit portfolio to cache
+mi -> portfolios: edit name/goalCode/image
+opt if portfolio not found
+mi -> app: throw NotFoundError
+end
+mi -> kafkaEnricher: publish edited portfolio
+mi -> app: return edited portfolio
+deactivate mi
+
+app -> mi: GET /portfolios
+note left: show portfolio list
+activate mi
+mi ->  accounts: find account by cif
+opt if UNREGISTERED
+mi -> app: return empty array
+end
+mi -> redis: get portfolios cache by cif
+opt if found
+mi -> app: return portfolios from cache
+end
+mi -> wms: GET /InquiryCustomerPortfolio
+mi -> portfolios: query portfolios
+mi -> mi: map portfolios from WMS and database
+opt if goalCode ADH exists in WMS and not in DB
+mi -> portfolios: save ADH portfolio
+end
+mi -> redis: save portfolios cache
+mi -> app: return portfolios
+deactivate mi
+
+app -> mi: GET /portfolio/:goalCode
+note left: show portfolio detail
+activate mi
+mi -> redis: get portfolios cache by cif
+opt if found
+mi -> app: return portfolios from cache
+end
+mi -> wms: GET /InquiryCustomerPortfolio
+mi -> portfolios: query portfolios
+mi -> mi: map portfolios from WMS and database
+mi -> redis: save portfolios cache
+mi -> products: query all products and investmentManagers
+mi -> mi: map product detail with portfolios
+mi -> app: return portfolio
+deactivate mi
+deactivate app
+
+@enduml
