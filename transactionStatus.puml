@@ -1,0 +1,113 @@
+@startuml transaction status
+queue "WMS\nID.JENIUS.INVESTMENT.TRANSACTION.STATUS" as kafka
+participant "worker-investment-transaction" as wit
+participant "ms-user-preference" as mup
+participant "ms-investment" as mi
+queue "j2notify" as notif
+collections "inflightTransactions" as inflights
+collections "failedTransactions" as faileds
+collections "transactions" as transactions
+queue "ID.JENIUS.INVESTMENT.REVERSAL" as kafkaReversal
+
+activate kafka
+kafka -> wit: consume transaction status
+activate wit
+deactivate kafka
+' VERIFIED
+group status=VERIFIED
+wit -> mup: GET /profile
+wit <- inflights: find by cif,referenceNo
+' VERIFIED SUB
+group type=SUB
+alt if inflight found
+wit -> mi: GET /portfolios/:goalCode
+wit -> inflights: update status=VERIFIED
+else not found
+wit -> mi: GET /products/:productCode
+wit -> mi: GET /portfolios/:goalCode
+wit -> inflights: create inflight data\nadd field fromBranch=true
+end
+wit -> notif: send notification
+end
+' VERIFIED SUB end
+' VERIFIED RED
+group type=RED
+wit -> mi: GET /portfolios/:goalCode
+wit -> inflights: update status=VERIFIED
+wit -> mi: delete portfolios cache
+wit -> notif: send notification
+end
+' VERIFIED RED end
+end
+' VERIFIED end
+' APPROVED
+group status=APPROVED
+' APPROVED SUB
+group type=SUB
+wit <- inflights: find by cif,referenceNo
+wit -> inflights: update inflight status=APPROVED\nadd field expiredAt
+wit -> transactions: insert transaction data
+wit -> notif: send notification
+end
+' APPROVED SUB end
+' APPROVED RED
+group type=RED
+wit <- inflights: find by cif and\nreferenceNo=TransactionID from kafka
+opt if inflight not found
+wit -> mi: GET /products/:productCode
+wit -> mi: GET /portfolios/:goalCode
+wit -> inflights: create inflight data\nadd field fromBranch=true
+end
+wit -> notif: send notification
+wit -> mi: delete portfolios cache
+end
+' APPROVED RED end
+end
+' APPROVED end
+' SETTLED
+group status=SETTLED
+' SETTLED RED
+group type=RED
+wit <- inflights: find by cif,referenceNo
+note right: if not found, find by TransactionID\nand repeat process below
+wit -> inflights: update inflight status=APPROVED\nadd field expiredAt
+wit -> transactions: insert transaction data
+wit -> notif: send notification
+wit -> mi: delete portfolios cache
+end
+' SETTLED RED end
+end
+' SETTLED end
+' UNVERIFIED
+group status=UNVERIFIED
+' UNVERIFIED SUB
+group type=SUB
+wit <- inflights: find by cif, referenceNo = RefNo (first 12 digits) or TransactionID
+alt fromBranch=true
+wit -> inflights: update status=DELETED and add expiredAt
+wit -> mi: delete portfolios cache
+wit -> faileds: insert failed transaction
+wit -> notif: send notification
+else from Jenius
+wit -> kafkaReversal: publish reversal {cif,referenceNo}
+end
+end
+' UNVERIFIED SUB end
+end
+' UNVERIFIED end
+' UNVERIFIED
+group status=DELETED
+' DELETED RED
+group type=RED
+wit <- inflights: find by cif, referenceNo = RefNo (first 12 digits) or TransactionID
+wit -> inflights: update status=DELETED and add expiredAt
+wit -> mi: delete portfolios cache
+wit -> faileds: insert failed transaction
+wit -> notif: send notification
+end
+' DELETED RED end
+end
+' DELETED end
+deactivate wit
+
+@enduml

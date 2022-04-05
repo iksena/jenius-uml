@@ -7,8 +7,8 @@ collections "inflightTransactions" as inflights
 participant "MDW\nPOST /el01/equationJournal/reversals" as mdw
 collections "failedReversals" as faileds
 queue "j2notify" as notif
-queue "MDW\nID.JENIUS.INVESTMENT.JOURNAL.REVERSE_POSTING" as kafkaJB
-collections "pendingReversedJournals" as pendings
+' queue "MDW\nID.JENIUS.INVESTMENT.JOURNAL.REVERSE_POSTING" as kafkaJB
+' collections "pendingReversedJournals" as pendings
 
 
 activate wireq
@@ -107,10 +107,12 @@ wir -> inflights: update status to DELETED\nand add expiredAt
 wir -> notif: Send notification
 opt if reversal error
 alt if statusCode=400 && "x-responsecode"=96
-wir -> kafkaJB: Publish reversed journal
-wir -> pendings: copy inflightTransaction to DB
+wir -> faileds: save to failedReversals\nwith retryCount = 0
 else if retryCount > 5
-wir -> faileds: save to failed reversals
+wir -> faileds: save to failedReversals
+note left
+Reversal should be done manually by JPS
+end note
 else
 wir -> kafka: publish to reversal {cif,referenceNo,retryCount++}
 end

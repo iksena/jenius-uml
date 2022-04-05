@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="1724px" preserveAspectRatio="none" style="width:1895px;height:1724px;background:#FFFFFF;" version="1.1" viewBox="0 0 1895 1724" width="1895px" zoomAndPan="magnify"><defs><filter height="300%" id="f2kboky9ye28r" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="63.9658" style="stroke:#A80036;stroke-width:1.0;" width="10" x="210.5" y="66.9766"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="84.6211" style="stroke:#A80036;stroke-width:1.0;" width="10" x="442" y="100.9424"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="126.5869" style="stroke:#A80036;stroke-width:1.0;" width="10" x="691.5" y="100.9424"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="1427.4883" style="stroke:#A80036;stroke-width:1.0;" width="10" x="1036.5" y="227.5293"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="59.6211" style="stroke:#000000;stroke-width:2.0;" width="232.5" x="926" y="242.5293"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="178.8184" style="stroke:#000000;stroke-width:2.0;" width="1272" x="554" y="1469.1992"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="147.5078" style="stroke:#000000;stroke-width:2.0;" width="1252" x="564" y="1493.5098"/><rect fill="#FFFFFF" height="54.2656" style="stroke:none;stroke-width:1.0;" width="1252" x="564" y="1555.4414"/><rect fill="#FFFFFF" height="31.3105" style="stroke:none;stroke-width:1.0;" width="1252" x="564" y="1609.707"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="215" x2="215" y1="56.9766" y2="1665.0176"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="447" x2="447" y1="56.9766" y2="1665.0176"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="696" x2="696" y1="56.9766" y2="1665.0176"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="1041" x2="1041" y1="56.9766" y2="1665.0176"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="1302" x2="1302" y1="56.9766" y2="1665.0176"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="1532" x2="1532" y1="56.9766" y2="1665.0176"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="1744" x2="1744" y1="56.9766" y2="1665.0176"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="1852" x2="1852" y1="56.9766" y2="1665.0176"/><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="205" x="111" y="21.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="191" x="118" y="42.0234">worker-investment-request</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="205" x="111" y="1664.0176"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="191" x="118" y="1684.5527">worker-investment-request</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="230" x="330" y="21.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216" x="337" y="42.0234">worker-investment-transaction</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="230" x="330" y="1664.0176"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216" x="337" y="1684.5527">worker-investment-transaction</text><path d="M579,30.4883 L814,30.4883 C819,30.4883 819,43.7324 819,43.7324 C819,43.7324 819,56.9766 814,56.9766 L579,56.9766 C574,56.9766 574,43.7324 574,43.7324 C574,43.7324 574,30.4883 579,30.4883 " fill="#FEFECE" filter="url(#f2kboky9ye28r)" style="stroke:#A80036;stroke-width:2.0;"/><path d="M814,30.4883 C809,30.4883 809,43.7324 809,43.7324 C809,56.9766 814,56.9766 814,56.9766 " fill="none" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="225" x="579" y="49.0234">ID.JENIUS.INVESTMENT.REVERSAL</text><path d="M579,1664.0176 L814,1664.0176 C819,1664.0176 819,1677.2617 819,1677.2617 C819,1677.2617 819,1690.5059 814,1690.5059 L579,1690.5059 C574,1690.5059 574,1677.2617 574,1677.2617 C574,1677.2617 574,1664.0176 579,1664.0176 " fill="#FEFECE" filter="url(#f2kboky9ye28r)" style="stroke:#A80036;stroke-width:2.0;"/><path d="M814,1664.0176 C809,1664.0176 809,1677.2617 809,1677.2617 C809,1690.5059 814,1690.5059 814,1690.5059 " fill="none" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="225" x="579" y="1682.5527">ID.JENIUS.INVESTMENT.REVERSAL</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="207" x="936" y="21.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193" x="943" y="42.0234">worker-investment-reversal</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="207" x="936" y="1664.0176"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193" x="943" y="1684.5527">worker-investment-reversal</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="151" x="1227" y="17.4883"/><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="151" x="1223" y="21.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="137" x="1230" y="42.0234">inflightTransactions</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="151" x="1227" y="1664.0176"/><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="151" x="1223" y="1668.0176"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="137" x="1230" y="1688.5527">inflightTransactions</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="46.9766" style="stroke:#A80036;stroke-width:1.5;" width="276" x="1392" y="5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="34" x="1513" y="25.5352">MDW</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="262" x="1399" y="42.0234">POST /el01/equationJournal/reversals</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="46.9766" style="stroke:#A80036;stroke-width:1.5;" width="276" x="1392" y="1664.0176"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="34" x="1513" y="1684.5527">MDW</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="262" x="1399" y="1701.041">POST /el01/equationJournal/reversals</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="116" x="1686" y="17.4883"/><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="116" x="1682" y="21.4883"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="102" x="1689" y="42.0234">failedReversals</text><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="116" x="1686" y="1664.0176"/><rect fill="#FEFECE" filter="url(#f2kboky9ye28r)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="116" x="1682" y="1668.0176"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="102" x="1689" y="1688.5527">failedReversals</text><path d="M1821,30.4883 L1883,30.4883 C1888,30.4883 1888,43.7324 1888,43.7324 C1888,43.7324 1888,56.9766 1883,56.9766 L1821,56.9766 C1816,56.9766 1816,43.7324 1816,43.7324 C1816,43.7324 1816,30.4883 1821,30.4883 " fill="#FEFECE" filter="url(#f2kboky9ye28r)" style="stroke:#A80036;stroke-width:2.0;"/><path d="M1883,30.4883 C1878,30.4883 1878,43.7324 1878,43.7324 C1878,56.9766 1883,56.9766 1883,56.9766 " fill="none" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="52" x="1821" y="49.0234">j2notify</text><path d="M1821,1664.0176 L1883,1664.0176 C1888,1664.0176 1888,1677.2617 1888,1677.2617 C1888,1677.2617 1888,1690.5059 1883,1690.5059 L1821,1690.5059 C1816,1690.5059 1816,1677.2617 1816,1677.2617 C1816,1677.2617 1816,1664.0176 1821,1664.0176 " fill="#FEFECE" filter="url(#f2kboky9ye28r)" style="stroke:#A80036;stroke-width:2.0;"/><path d="M1883,1664.0176 C1878,1664.0176 1878,1677.2617 1878,1677.2617 C1878,1690.5059 1883,1690.5059 1883,1690.5059 " fill="none" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="52" x="1821" y="1682.5527">j2notify</text><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="63.9658" style="stroke:#A80036;stroke-width:1.0;" width="10" x="210.5" y="66.9766"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="84.6211" style="stroke:#A80036;stroke-width:1.0;" width="10" x="442" y="100.9424"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="126.5869" style="stroke:#A80036;stroke-width:1.0;" width="10" x="691.5" y="100.9424"/><rect fill="#FFFFFF" filter="url(#f2kboky9ye28r)" height="1427.4883" style="stroke:#A80036;stroke-width:1.0;" width="10" x="1036.5" y="227.5293"/><polygon fill="#A80036" points="679.5,96.9424,689.5,100.9424,679.5,104.9424,683.5,100.9424" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="220.5" x2="685.5" y1="100.9424" y2="100.9424"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="174" x="227.5" y="96.2002">Publish transaction reversal</text><path d="M5,71.9766 L5,111.9766 L202,111.9766 L202,81.9766 L192,71.9766 L5,71.9766 " fill="#FBFB77" filter="url(#f2kboky9ye28r)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M192,71.9766 L192,81.9766 L202,81.9766 L192,71.9766 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="176" x="11" y="89.5449">1) if transaction from Jenius</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="166" x="11" y="104.8555">is rejected by WMS system</text><polygon fill="#A80036" points="679.5,181.5635,689.5,185.5635,679.5,189.5635,683.5,185.5635" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="447" x2="685.5" y1="185.5635" y2="185.5635"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="174" x="454" y="180.8213">Publish transaction reversal</text><path d="M220,156.5977 L220,196.5977 L433,196.5977 L433,166.5977 L423,156.5977 L220,156.5977 " fill="#FBFB77" filter="url(#f2kboky9ye28r)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M423,156.5977 L423,166.5977 L433,166.5977 L423,156.5977 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="109" x="226" y="174.166">2) if WMS publish</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="192" x="226" y="189.4766">transaction status UNVERIFIED</text><polygon fill="#A80036" points="1024.5,223.5293,1034.5,227.5293,1024.5,231.5293,1028.5,227.5293" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="696.5" x2="1030.5" y1="227.5293" y2="227.5293"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="246" x="703.5" y="222.7871">Consume {cif, referenceNo, retryCount}</text><path d="M926,242.5293 L993,242.5293 L993,249.5293 L983,259.5293 L926,259.5293 L926,242.5293 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="59.6211" style="stroke:#000000;stroke-width:2.0;" width="232.5" x="926" y="242.5293"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="22" x="941" y="256.0977">opt</text><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="104" x="1008" y="255.1641">[if retryCount &gt; 0]</text><line style="stroke:#A80036;stroke-width:1.0;" x1="1046.5" x2="1088.5" y1="281.1504" y2="281.1504"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1088.5" x2="1088.5" y1="281.1504" y2="294.1504"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1047.5" x2="1088.5" y1="294.1504" y2="294.1504"/><polygon fill="#A80036" points="1057.5,290.1504,1047.5,294.1504,1057.5,298.1504,1053.5,294.1504" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="93" x="1053.5" y="276.4082">wait 5 minutes</text><polygon fill="#A80036" points="1057.5,326.4609,1047.5,330.4609,1057.5,334.4609,1053.5,330.4609" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1051.5" x2="1301.5" y1="330.4609" y2="330.4609"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="232" x="1063.5" y="325.7188">get inflight data by {cif, referenceNo}</text><polygon fill="#A80036" points="1520,866.0195,1530,870.0195,1520,874.0195,1524,870.0195" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1046.5" x2="1526" y1="870.0195" y2="870.0195"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="123" x="1053.5" y="865.2773">Reverse transaction</text><path d="M1537,343.4609 L1537,1378.4609 L1801,1378.4609 L1801,353.4609 L1791,343.4609 L1537,343.4609 " fill="#FBFB77" filter="url(#f2kboky9ye28r)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M1791,343.4609 L1791,353.4609 L1801,353.4609 L1791,343.4609 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1543" y="361.0293">{</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="168" x="1551" y="376.3398">processingCode: 'A33000',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="76" x="1551" y="391.6504">postingRq: {</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="79" x="1559" y="406.9609">journalList: [</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1567" y="422.2715">{</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="130" x="1575" y="437.582">accountNo: {source},</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="93" x="1575" y="452.8926">trxCode: '0C1',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="116" x="1575" y="468.2031">amount: {amount},</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="94" x="1575" y="483.5137">currency: 'IDR',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="1575" y="498.8242">costCenter: '',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="84" x="1575" y="514.1348">indicator: 'D',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="164" x="1575" y="529.4453">narrative1: '{subAccount}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="1575" y="544.7559">narrative2: '{referenceNo}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="174" x="1575" y="560.0664">narrative3: '{productName}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="77" x="1575" y="575.377">narrative4: ''</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8" x="1567" y="590.6875">},</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1567" y="605.998">{</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="136" x="1575" y="621.3086">accountNo: '{source}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="93" x="1575" y="636.6191">trxCode: '0C2',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="131" x="1575" y="651.9297">amount: '{fee + tax}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="94" x="1575" y="667.2402">currency: 'IDR',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="1575" y="682.5508">costCenter: '',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="84" x="1575" y="697.8613">indicator: 'D',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="164" x="1575" y="713.1719">narrative1: '{subAccount}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="1575" y="728.4824">narrative2: '{referenceNo}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="174" x="1575" y="743.793">narrative3: '{productName}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="77" x="1575" y="759.1035">narrative4: ''</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8" x="1567" y="774.4141">},</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1567" y="789.7246">{</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="211" x="1575" y="805.0352">accountNo: '{productGLAccount}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="93" x="1575" y="820.3457">trxCode: '5C1',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="122" x="1575" y="835.6563">amount: '{amount}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="94" x="1575" y="850.9668">currency: 'IDR',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="1575" y="866.2773">costCenter: '',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="83" x="1575" y="881.5879">indicator: 'C',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="164" x="1575" y="896.8984">narrative1: '{subAccount}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="1575" y="912.209">narrative2: '{referenceNo}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="174" x="1575" y="927.5195">narrative3: '{productName}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="77" x="1575" y="942.8301">narrative4: ''</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8" x="1567" y="958.1406">},</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1567" y="973.4512">{</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="194" x="1575" y="988.7617">accountNo: '{income account}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="93" x="1575" y="1004.0723">trxCode: '5C2',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="93" x="1575" y="1019.3828">amount: '{fee}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="94" x="1575" y="1034.6934">currency: 'IDR',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="134" x="1575" y="1050.0039">costCenter: '987003',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="83" x="1575" y="1065.3145">indicator: 'C',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="164" x="1575" y="1080.625">narrative1: '{subAccount}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="1575" y="1095.9355">narrative2: '{referenceNo}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="174" x="1575" y="1111.2461">narrative3: '{productName}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="77" x="1575" y="1126.5566">narrative4: ''</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8" x="1567" y="1141.8672">},</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1567" y="1157.1777">{</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="168" x="1575" y="1172.4883">accountNo: '{tax account}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="93" x="1575" y="1187.7988">trxCode: '5C3',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="94" x="1575" y="1203.1094">amount: '{tax}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="94" x="1575" y="1218.4199">currency: 'IDR',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="1575" y="1233.7305">costCenter: '',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="83" x="1575" y="1249.041">indicator: 'C',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="164" x="1575" y="1264.3516">narrative1: '{subAccount}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="1575" y="1279.6621">narrative2: '{referenceNo}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="174" x="1575" y="1294.9727">narrative3: '{productName}',</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="77" x="1575" y="1310.2832">narrative4: ''</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1567" y="1325.5938">}</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1559" y="1340.9043">]</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1551" y="1356.2148">}</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="1543" y="1371.5254">}</text><polygon fill="#A80036" points="1290.5,1420.8887,1300.5,1424.8887,1290.5,1428.8887,1294.5,1424.8887" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1046.5" x2="1296.5" y1="1424.8887" y2="1424.8887"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="163" x="1053.5" y="1404.8359">update status to DELETED</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115" x="1053.5" y="1420.1465">and add expiredAt</text><polygon fill="#A80036" points="1840,1450.1992,1850,1454.1992,1840,1458.1992,1844,1454.1992" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1046.5" x2="1846" y1="1454.1992" y2="1454.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="107" x="1053.5" y="1449.457">Send notification</text><path d="M554,1469.1992 L621,1469.1992 L621,1476.1992 L611,1486.1992 L554,1486.1992 L554,1469.1992 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="178.8184" style="stroke:#000000;stroke-width:2.0;" width="1272" x="554" y="1469.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="22" x="569" y="1482.7676">opt</text><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="98" x="636" y="1481.834">[if reversal error]</text><path d="M564,1493.5098 L626,1493.5098 L626,1500.5098 L616,1510.5098 L564,1510.5098 L564,1493.5098 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="147.5078" style="stroke:#000000;stroke-width:2.0;" width="1252" x="564" y="1493.5098"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="17" x="579" y="1507.0781">alt</text><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="258" x="641" y="1506.1445">[if statusCode=400 &amp;&amp; "x-responsecode"=96]</text><polygon fill="#A80036" points="1732,1543.4414,1742,1547.4414,1732,1551.4414,1736,1547.4414" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1046.5" x2="1738" y1="1547.4414" y2="1547.4414"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="143" x="1053.5" y="1527.3887">save to failedReversals</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="124" x="1053.5" y="1542.6992">with retryCount = 0</text><line style="stroke:#000000;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="564" x2="1816" y1="1556.4414" y2="1556.4414"/><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="104" x="569" y="1567.0762">[if retryCount &gt; 5]</text><polygon fill="#A80036" points="1732,1592.707,1742,1596.707,1732,1600.707,1736,1596.707" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1046.5" x2="1738" y1="1596.707" y2="1596.707"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="143" x="1053.5" y="1591.9648">save to failedReversals</text><path d="M751,1575.3965 L751,1600.3965 L1027,1600.3965 L1027,1585.3965 L1017,1575.3965 L751,1575.3965 " fill="#FBFB77" filter="url(#f2kboky9ye28r)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M1017,1575.3965 L1017,1585.3965 L1027,1585.3965 L1017,1575.3965 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="255" x="757" y="1592.9648">Reversal should be done manually by JPS</text><line style="stroke:#000000;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="564" x2="1816" y1="1610.707" y2="1610.707"/><polygon fill="#A80036" points="707.5,1629.0176,697.5,1633.0176,707.5,1637.0176,703.5,1633.0176" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="701.5" x2="1035.5" y1="1633.0176" y2="1633.0176"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="316" x="713.5" y="1628.2754">publish to reversal {cif,referenceNo,retryCount++}</text><!--MD5=[bd3125f972595b3dd9e4f823bff33d23]
+@startuml reversal transaction
+participant "worker-investment-request" as wireq
+participant "worker-investment-transaction" as wit
+queue "ID.JENIUS.INVESTMENT.REVERSAL" as kafka
+participant "worker-investment-reversal" as wir
+collections "inflightTransactions" as inflights
+participant "MDW\nPOST /el01/equationJournal/reversals" as mdw
+collections "failedReversals" as faileds
+queue "j2notify" as notif
+' queue "MDW\nID.JENIUS.INVESTMENT.JOURNAL.REVERSE_POSTING" as kafkaJB
+' collections "pendingReversedJournals" as pendings
+
+
+activate wireq
+wireq -> kafka: Publish transaction reversal
+activate kafka
+note left
+1) if transaction from Jenius
+is rejected by WMS system
+end note
+deactivate wireq
+activate wit
+wit -> kafka: Publish transaction reversal
+note left
+2) if WMS publish
+transaction status UNVERIFIED
+end note
+deactivate wit
+kafka -> wir: Consume {cif, referenceNo, retryCount}
+deactivate kafka
+activate wir
+opt if retryCount > 0
+wir -> wir: wait 5 minutes
+end
+wir <- inflights: get inflight data by {cif, referenceNo}
+wir -> mdw: Reverse transaction
+note right
+{
+  processingCode: 'A33000',
+  postingRq: {
+    journalList: [
+      {
+        accountNo: {source},
+        trxCode: '0C1',
+        amount: {amount},
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{source}',
+        trxCode: '0C2',
+        amount: '{fee + tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{productGLAccount}',
+        trxCode: '5C1',
+        amount: '{amount}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{income account}',
+        trxCode: '5C2',
+        amount: '{fee}',
+        currency: 'IDR',
+        costCenter: '987003',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{tax account}',
+        trxCode: '5C3',
+        amount: '{tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      }
+    ]
+  }
+}
+end note
+wir -> inflights: update status to DELETED\nand add expiredAt
+wir -> notif: Send notification
+opt if reversal error
+alt if statusCode=400 && "x-responsecode"=96
+wir -> faileds: save to failedReversals\nwith retryCount = 0
+else if retryCount > 5
+wir -> faileds: save to failedReversals
+note left
+Reversal should be done manually by JPS
+end note
+else
+wir -> kafka: publish to reversal {cif,referenceNo,retryCount++}
+end
+end
+deactivate wir
+@enduml
+
+@startuml reversal transaction
+participant "worker-investment-request" as wireq
+participant "worker-investment-transaction" as wit
+queue "ID.JENIUS.INVESTMENT.REVERSAL" as kafka
+participant "worker-investment-reversal" as wir
+collections "inflightTransactions" as inflights
+participant "MDW\nPOST /el01/equationJournal/reversals" as mdw
+collections "failedReversals" as faileds
+queue "j2notify" as notif
+
+
+activate wireq
+wireq -> kafka: Publish transaction reversal
+activate kafka
+note left
+1) if transaction from Jenius
+is rejected by WMS system
+end note
+deactivate wireq
+activate wit
+wit -> kafka: Publish transaction reversal
+note left
+2) if WMS publish
+transaction status UNVERIFIED
+end note
+deactivate wit
+kafka -> wir: Consume {cif, referenceNo, retryCount}
+deactivate kafka
+activate wir
+opt if retryCount > 0
+wir -> wir: wait 5 minutes
+end
+wir <- inflights: get inflight data by {cif, referenceNo}
+wir -> mdw: Reverse transaction
+note right
+{
+  processingCode: 'A33000',
+  postingRq: {
+    journalList: [
+      {
+        accountNo: {source},
+        trxCode: '0C1',
+        amount: {amount},
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{source}',
+        trxCode: '0C2',
+        amount: '{fee + tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{productGLAccount}',
+        trxCode: '5C1',
+        amount: '{amount}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{income account}',
+        trxCode: '5C2',
+        amount: '{fee}',
+        currency: 'IDR',
+        costCenter: '987003',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{tax account}',
+        trxCode: '5C3',
+        amount: '{tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      }
+    ]
+  }
+}
+end note
+wir -> inflights: update status to DELETED\nand add expiredAt
+wir -> notif: Send notification
+opt if reversal error
+alt if statusCode=400 && "x-responsecode"=96
+wir -> faileds: save to failedReversals\nwith retryCount = 0
+else if retryCount > 5
+wir -> faileds: save to failedReversals
+note left
+Reversal should be done manually by JPS
+end note
+else
+wir -> kafka: publish to reversal {cif,referenceNo,retryCount++}
+end
+end
+deactivate wir
+@enduml
+
+PlantUML version 1.2022.0(Tue Jan 11 23:16:42 WIB 2022)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
