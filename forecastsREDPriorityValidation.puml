@@ -1,10 +1,11 @@
-@startuml forecast transaction
+@startuml forecast transaction validate priority WMS
 participant "ms-gql" as mg
 participant "ms-investment-transaction" as mit
 participant "ms-accounts" as ma
 participant "ms-investment" as mi
 participant "WMS\nInquiryFeeTax" as wms
 collections "forecasts" as forecasts
+collections "priorityInvetmentAccounts" as prioWms
 
 activate mg
 mg -> mit: POST /forecasts
@@ -12,26 +13,13 @@ note left
 {
     productCode: String
     currency: String
-    type: SUB/RED/SWT
-    goalCode?: String
-    amount?: Number
-    units?: Number
-    subAccount?: String
+    type: RED
+    units: Number
+    subAccount: String
     isRedeemAll: Boolean
 }
 end note
 activate mit
-group Validate subAccount
-note right
-subAccount = goalCode + productCode + cif + inc. number
-end note
-opt if productCode not match with subAccount
-mit -> mg: return 403: PRODUCT_CODE_MISMATCH error
-end
-opt if cif not match with subAccount
-mit -> mg: return 403: ACCOUNT_CLAIM_MISSING error
-end
-end
 mit -> ma: GET /accounts/:id/validation\nid: account number
 activate ma
 ma --> mit: filter accountNo based on currency
@@ -43,6 +31,11 @@ end
 opt if account of the currency not found
 mit -> mg: return 403: ACCOUNT_NOT_FOUND error
 end
+end
+mit -> prioWms: query by CIF
+prioWms -> mit: list of accountNo
+opt if cif found AND accountNo not exist in list
+mit -> mg: return 403: PRIORITY_INVESTMENT_ACCOUNT_UNREGISTERED
 end
 mit -> mi: GET /active-products/:productCode
 activate mi

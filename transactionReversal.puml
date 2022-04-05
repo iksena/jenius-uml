@@ -1,0 +1,119 @@
+@startuml reversal transaction
+participant "worker-investment-request" as wireq
+participant "worker-investment-transaction" as wit
+queue "ID.JENIUS.INVESTMENT.REVERSAL" as kafka
+participant "worker-investment-reversal" as wir
+collections "inflightTransactions" as inflights
+participant "MDW\nPOST /el01/equationJournal/reversals" as mdw
+collections "failedReversals" as faileds
+queue "j2notify" as notif
+queue "MDW\nID.JENIUS.INVESTMENT.JOURNAL.REVERSE_POSTING" as kafkaJB
+collections "pendingReversedJournals" as pendings
+
+
+activate wireq
+wireq -> kafka: Publish transaction reversal
+activate kafka
+note left
+1) if transaction from Jenius
+is rejected by WMS system
+end note
+deactivate wireq
+activate wit
+wit -> kafka: Publish transaction reversal
+note left
+2) if WMS publish
+transaction status UNVERIFIED
+end note
+deactivate wit
+kafka -> wir: Consume {cif, referenceNo, retryCount}
+deactivate kafka
+activate wir
+opt if retryCount > 0
+wir -> wir: wait 5 minutes
+end
+wir <- inflights: get inflight data by {cif, referenceNo}
+wir -> mdw: Reverse transaction
+note right
+{
+  processingCode: 'A33000',
+  postingRq: {
+    journalList: [
+      {
+        accountNo: {source},
+        trxCode: '0C1',
+        amount: {amount},
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{source}',
+        trxCode: '0C2',
+        amount: '{fee + tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{productGLAccount}',
+        trxCode: '5C1',
+        amount: '{amount}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{income account}',
+        trxCode: '5C2',
+        amount: '{fee}',
+        currency: 'IDR',
+        costCenter: '987003',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{tax account}',
+        trxCode: '5C3',
+        amount: '{tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      }
+    ]
+  }
+}
+end note
+wir -> inflights: update status to DELETED\nand add expiredAt
+wir -> notif: Send notification
+opt if reversal error
+alt if statusCode=400 && "x-responsecode"=96
+wir -> kafkaJB: Publish reversed journal
+wir -> pendings: copy inflightTransaction to DB
+else if retryCount > 5
+wir -> faileds: save to failed reversals
+else
+wir -> kafka: publish to reversal {cif,referenceNo,retryCount++}
+end
+end
+deactivate wir
+@enduml

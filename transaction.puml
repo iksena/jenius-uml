@@ -1,0 +1,154 @@
+@startuml create transaction
+participant "ms-gql" as mg
+participant "ms-investment-transaction" as mit
+queue "ID.JENIUS.INVESTMENT.JOURNAL.POSTING" as mdw
+queue "ID.JENIUS.INVESTMENT.TRANSACTION.REQUEST" as wms
+collections "forecasts" as forecasts
+collections "inflightTransactions" as inflights
+
+activate mg
+mg -> mit: POST /transactions
+note left
+{
+    forecastChecksum: String
+}
+end note
+activate mit
+opt if token not step up
+mit -> mg: return 401: UNAUTHORIZED
+end
+mit -> forecasts: query by id with checksum
+activate forecasts
+forecasts -> mit: return forecast
+deactivate forecasts
+opt if forecast not found
+mit -> mg: return 403: INVALID_FORECAST error
+end
+alt if type=SUB
+mit -> mdw: publish journal to MDW
+note right
+{
+  processingCode: 'A33000',
+  postingRq: {
+    journalList: [
+      {
+        accountNo: {source},
+        trxCode: '0C1',
+        amount: {amount},
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{source}',
+        trxCode: '0C2',
+        amount: '{fee + tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{productGLAccount}',
+        trxCode: '5C1',
+        amount: '{amount}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{income account}',
+        trxCode: '5C2',
+        amount: '{fee}',
+        currency: 'IDR',
+        costCenter: '987003',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{tax account}',
+        trxCode: '5C3',
+        amount: '{tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      }
+    ]
+  }
+}
+end note
+else if type=RED
+mit -> wms: publish transaction to WMS
+note right
+{
+  ChannelID: '02',
+  CIF: {cif},
+  ProductCode: {productCode},
+  TransactionCatagory: {type},
+  TransactionDate: Date,
+  TransAccountList: [
+    {
+      InAccountNo: {goalCode}/{subAccount},
+      NetAmount: {amount},
+      Units: {units},
+      IsRedeemAll: {isRedeemAll}
+    }
+  ],
+  Charges: 0,
+  custAccountNo: {source},
+  ProductCodeTo: '',
+  Remark: '',
+  HoldID: 0,
+  RefNo: {referenceNo}
+}
+end note
+end
+mit -> inflights: insert inflight
+note right
+{
+    _id: ObjectId
+    source: String
+    cif: String
+    referenceNo: String
+    type: SUB/RED
+    currency: IDR/USD
+    navPerUnit: Number
+    productCode: String
+    amount: Number
+    fee: Number
+    tax: Number
+    subAccount: String
+    productGLAccount: String
+    isRedeemAll?: Boolean
+    goalCode?: String
+    units?: Number
+    productName: String
+    imageUri: String
+    assetClass: String
+    expiredAt: Date
+    createdAt: Date
+    modifiedAt: Date
+}
+end note
+mit -> mg: return created inflight
+deactivate mit
+deactivate mg
+@enduml

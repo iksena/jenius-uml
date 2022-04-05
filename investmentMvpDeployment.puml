@@ -1,0 +1,5 @@
+@startuml investment mvp
+node "worker-investment-product" as wip
+node "worker-investment-nav" as win
+
+@enduml

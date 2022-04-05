@@ -1,0 +1,111 @@
+@startuml create transaction
+participant "ms-investment-transaction" as mit
+queue "MDW\nID.JENIUS.INVESTMENT.JOURNAL.REQUEST" as mdwReq
+queue "MDW\nID.JENIUS.INVESTMENT.JOURNAL.RESPONSE" as mdw
+participant "worker-investment-journal" as wij
+collections "inflightTransactions" as inflights
+queue "ID.JENIUS.INVESTMENT.TRANSACTION.REQUEST" as wms
+
+activate mit
+mit -> mdwReq: publish journal to MDW
+note right
+{
+  processingCode: 'A33000',
+  postingRq: {
+    journalList: [
+      {
+        accountNo: {source},
+        trxCode: '0C1',
+        amount: {amount},
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{source}',
+        trxCode: '0C2',
+        amount: '{fee + tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'D',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{productGLAccount}',
+        trxCode: '5C1',
+        amount: '{amount}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{income account}',
+        trxCode: '5C2',
+        amount: '{fee}',
+        currency: 'IDR',
+        costCenter: '987003',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      },
+      {
+        accountNo: '{tax account}',
+        trxCode: '5C3',
+        amount: '{tax}',
+        currency: 'IDR',
+        costCenter: '',
+        indicator: 'C',
+        narrative1: '{subAccount}',
+        narrative2: '{referenceNo}',
+        narrative3: '{productName}',
+        narrative4: ''
+      }
+    ]
+  }
+}
+end note
+deactivate mit
+activate mdw
+mdw -> wij: Consume journal response
+deactivate mdw
+activate wij
+wij -> inflights: update inflight from PENDING_DEBIT to PENDING
+wij -> wms: publish transaction to WMS
+note right
+{
+  ChannelID: '02',
+  CIF: {cif},
+  ProductCode: {productCode},
+  TransactionCatagory: {type},
+  TransactionDate: Date,
+  TransAccountList: [
+    {
+      InAccountNo: {goalCode}/{subAccount},
+      NetAmount: {amount},
+      Units: {units},
+      IsRedeemAll: {isRedeemAll}
+    }
+  ],
+  Charges: 0,
+  custAccountNo: {source},
+  ProductCodeTo: '',
+  Remark: '',
+  HoldID: 0,
+  RefNo: {referenceNo}
+}
+end note
+deactivate wij
+@enduml
