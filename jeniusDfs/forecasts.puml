@@ -1,0 +1,89 @@
+@startuml forecast
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+participant "Additiv\nDFS" as dfs
+participant "KSEI\nS-Invest" as ksei
+
+activate app
+app -> ms: GraphQL query\nforecastTransactions
+note left
+forecastInvestmentTransaction(input: ForecastInvestmentTransactionInput!) {
+  checksum: String
+  productCode: String
+  units: Float
+  amount: Float
+  fee: Float
+  tax: Float
+  currency: String
+}
+input ForecastInvestmentTransactionInput {
+  currency: String!
+  productCode: String!
+  subAccount: String
+  type: String!
+  amount: Int
+  units: Float
+  goalCode: String
+  isRedeemAll: Boolean
+}
+end note
+activate ms
+ms -> dfs: POST /InquiryFeeTax
+note left
+{
+    cIF: String
+    transactionCategory: SUB/RED
+    custBankAccountNo: String
+    productCode: String
+    _TransactionValue: [
+        {
+            IsRedeemAll: 1/0
+            NetAmount: Number
+            Units: Number
+            InvAccountNo: String
+        }
+    ]
+}
+end note
+activate dfs
+dfs --> ms: return forecast response
+note right
+{
+  ErrorCode: String
+  IsSuccess: Boolean
+  Message: String
+  ResponseCode: null
+  SolutionCode: null
+  Result: {
+    CIF: String
+    Currency: String
+    CustBankAccountNo: String
+    IsAfter: Boolean
+    NAVDate: String
+    NAVPerUnit: Number
+    ProdBankAccountNo: String
+    ProductCode: String
+    ProductCodeTo: String
+    TotalAmount: Number
+    TotalFeeAmount: Number
+    TotalNetAmount: Number
+    TotalTaxAmount: Number
+    TransactionCategory: SUB/RED,
+    _TaxFeeListOut: [
+      {
+        Amount: Number
+        FeeAmount: Number
+        InvAccountNo: String
+        NetAmount: Number
+        TaxAmount: Number
+      }
+    ]
+  }
+}
+end note
+deactivate dfs
+ms --> app: return forecast response by query
+deactivate ms
+deactivate app
+
+@enduml

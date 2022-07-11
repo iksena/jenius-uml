@@ -1,0 +1,169 @@
+@startuml portfolios
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+participant "Additiv\nDFS" as dfs
+
+activate app
+app -> ms: GraphQL query portfolios
+note right
+portfolios {
+  goalCode: String!
+  name: String!
+  products {
+    id: String
+    productCode: String!
+    productName: String,
+    status: String
+    amount: Float
+    unrealizedGainLoss: Float
+    uglPercentage: Float
+    purchasePrice: Float
+    navPerUnit: Float
+    navDate: String
+    unit: Float
+    currency: String
+    imageUri: String
+    assetClass: String
+    display: Boolean
+  }
+}
+end note
+activate ms
+ms -> dfs: GET /InquiryCustomerPortfolio
+activate dfs
+note right
+{
+	"ErrorCode": "0000",
+	"IsSuccess": true,
+	"Message": "",
+	"ResponseCode": null,
+	"SolutionCode": null,
+	"Result": {
+		"CIF": "5875D1",
+		"CurrencyDate": "2022-03-30T11:47:51",
+		"CustRiskProfileExpiredDate": "2023-03-29T00:00:00",
+		"CustRiskProfileType": "Konservatif",
+		"CustRiskProfilingDate": "2022-03-29T00:00:00",
+		"CustomerName": "Jenius fjwnlihraa",
+		"OutstandingFlag": false,
+		"PersentaseOutstanding": 0,
+		"ProductList": [
+			{
+				"Currency": "IDR",
+				"CurrencyRate": 1,
+				"DOBInsured": null,
+				"FundHouseCode": "EL002",
+				"FundHouseName": "Ashmore Asset Management Indonesia",
+				"InforceDate": null,
+				"InsuredName": null,
+				"InvestmentAccount": [
+					{
+						"Amount": 179494.5,
+						"AvgUnitCost": 3560,
+						"InvestmentAccountNo": "ADHADENEQ5875D1001",
+						"InvestmentType": "Reguler",
+						"NAVDate": "2022-03-22T00:00:00",
+						"NavPerUnit": 1000,
+						"NominalBeli": 639000.42,
+						"ProductBA": null,
+						"TransactionList": null,
+						"UGL": -459505.92,
+						"UGLFlag": false,
+						"UGLPercentage": -71.91,
+						"Units": 179.4945
+					},
+					{
+						"Amount": 258822.4,
+						"AvgUnitCost": 3554.5582,
+						"InvestmentAccountNo": "001ADENEQ5875D1001",
+						"InvestmentType": "Reguler",
+						"NAVDate": "2022-03-22T00:00:00",
+						"NavPerUnit": 1000,
+						"NominalBeli": 919999.28,
+						"ProductBA": null,
+						"TransactionList": null,
+						"UGL": -661176.88,
+						"UGLFlag": false,
+						"UGLPercentage": -71.87,
+						"Units": 258.8224
+					}
+				],
+				"LastPaymentDate": null,
+				"NAVDate": "2022-03-22T00:00:00",
+				"NAVPerUnit": 1000,
+				"NextPaymentDate": null,
+				"PaymentFreq": null,
+				"PaymentMethod": null,
+				"PolicyNo": null,
+				"PolicyStatus": null,
+				"Premium": 0,
+				"ProdBankAccount": "05373001807",
+				"ProductCategory": "MF",
+				"ProductCode": "ADENEQ",
+				"ProductName": "RD Ashmore Dana Ekuitas Nusantara",
+				"RiderAccount": null,
+				"SumAssured": 0,
+				"TotalAmount": 438316.9,
+				"TotalAmountInIDR": 438316.9,
+				"TotalUnits": 438.31690000000003
+			},
+			{
+				"Currency": "IDR",
+				"CurrencyRate": 1,
+				"DOBInsured": null,
+				"FundHouseCode": "EL002",
+				"FundHouseName": "Ashmore Asset Management Indonesia",
+				"InforceDate": null,
+				"InsuredName": null,
+				"InvestmentAccount": [
+					{
+						"Amount": 1012000,
+						"AvgUnitCost": 2500,
+						"InvestmentAccountNo": "001INVPSU5875D1001",
+						"InvestmentType": "Reguler",
+						"NAVDate": "2022-02-23T00:00:00",
+						"NavPerUnit": 2530,
+						"NominalBeli": 1000000,
+						"ProductBA": null,
+						"TransactionList": null,
+						"UGL": 12000,
+						"UGLFlag": true,
+						"UGLPercentage": 1.2,
+						"Units": 400
+					}
+				],
+				"LastPaymentDate": null,
+				"NAVDate": "2022-02-23T00:00:00",
+				"NAVPerUnit": 2530,
+				"NextPaymentDate": null,
+				"PaymentFreq": null,
+				"PaymentMethod": null,
+				"PolicyNo": null,
+				"PolicyStatus": null,
+				"Premium": 0,
+				"ProdBankAccount": "05373000061",
+				"ProductCategory": "MF",
+				"ProductCode": "INVPSU",
+				"ProductName": "RD Mandiri Investa Pasar Uang",
+				"RiderAccount": null,
+				"SumAssured": 0,
+				"TotalAmount": 1012000,
+				"TotalAmountInIDR": 1012000,
+				"TotalUnits": 400
+			},
+		],
+		"TotalAmountInIDR": 2656716.9
+	}
+}
+end note
+dfs --> ms: return portofolios
+deactivate dfs
+ms -> ms: map subaccounts with portfolios
+note right
+subAccount = Goal Code(3) + Product Code(≥6) + CIF(6) + Incremental Number (3)
+end note
+ms --> app: return portfolios
+deactivate ms
+deactivate app
+
+@enduml

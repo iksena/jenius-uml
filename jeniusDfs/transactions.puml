@@ -1,0 +1,158 @@
+@startuml transactions
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+queue "BTPN\nKafka" as kafka
+participant "BTPN\nMDW-EQ" as mdw
+participant "Additiv\nDFS" as dfs
+participant "KSEI\nS-Invest" as ksei
+
+activate app
+app -> ms: GraphQL query\ncreateInvestmentTransaction
+note right
+createInvestmentTransaction(input: CreateInvestmentTransactionInput!) {
+  status: String
+  subAccount: String
+  referenceNo: String
+  productCode: String
+  productName: String
+  assetClass: String
+  imageUri: String
+  type: String
+  units: Float
+  amount: Float
+  fee: Float
+  tax: Float
+  currency: String
+  createdAt: String
+  modifiedAt: String
+}
+input CreateInvestmentTransactionInput {
+  forecastChecksum: String!
+}
+end note
+
+activate ms
+ms -> kafka: Publish to Kafka\nID.JENIUS.INVESTMENT.TRANSACTION.REQUEST
+activate kafka
+note right
+{
+  ChannelID: '02',
+  CIF: {cif},
+  ProductCode: {productCode},
+  TransactionCatagory: {type},
+  TransactionDate: Date,
+  TransAccountList: [
+    {
+      InAccountNo: {goalCode}/{subAccount},
+      NetAmount: {amount},
+      Units: {units},
+      IsRedeemAll: {isRedeemAll}
+    }
+  ],
+  Charges: 0,
+  custAccountNo: {source},
+  ProductCodeTo: '',
+  Remark: '',
+  HoldID: 0,
+  RefNo: {referenceNo}
+}
+end note
+ms --> app: response transaction accepted
+deactivate ms
+deactivate app
+
+kafka --> dfs: consume transaction request
+deactivate kafka
+
+' Buy transaction condition
+opt If buy transaction\nDebit from user balance
+activate dfs
+dfs -> kafka: Publish journal posting\nID.JENIUS.INVESTMENT.JOURNAL.POSTING
+activate kafka
+
+dfs -> kafka: publish status PENDING transaction\nID.JENIUS.INVESTMENT.TRANSACTION.STATUS
+deactivate dfs
+kafka --> ms: consume PENDING status
+kafka --> mdw: consume journal posting
+deactivate kafka
+
+activate mdw
+mdw -> kafka: Publish journal response\nID.JENIUS.INVESTMENT.JOURNAL.RESPONSE
+deactivate mdw
+
+activate kafka
+kafka --> dfs: consume journal response
+deactivate kafka
+activate dfs
+end opt
+' End buy transaction condition
+
+dfs -> kafka: publish status VERIFIED transaction\nID.JENIUS.INVESTMENT.TRANSACTION.STATUS
+note left
+{
+  "CIF": "String",
+  "ChannelID": "JENIUS",
+  "RefNo": "String - 12 chars",
+  "ProductCode": "String - 6 or more chars",
+  "TransactionCategory": "SUB/RED/SWT",
+  "TransactionDate": "ISODate",
+  "SettlementDate": "ISODate",
+  "NAVDate": "ISODate",
+  "Unit": Number,
+  "Amount": Number,
+  "NetAmount": Number,
+  "FeeAmount": Number,
+  "TaxAmount": Number,
+  "Charges": Number,
+  "Remark": "PTO",
+  "TransactionStatus": "VERIFIED",
+  "IsRedeemAll": Boolean,
+  "TransactionID": Number,
+  "NoAccount": "SubAccount",
+  "ProductCodeTo": "String - 6 or more chars",
+  "IsSuccess": Boolean,
+  "Messages": "String",
+  "ErrorCode": "0000"
+}
+end note
+activate kafka
+kafka --> ms: consume VERIFIED status
+deactivate kafka
+
+dfs -> dfs: PTWS/Operation Staffs approve transactions\nby updating current NAV
+dfs -> ksei: Report transaction to KSEI
+dfs -> kafka: publish status APPROVED transaction\nwith calculated units\nto ID.JENIUS.INVESTMENT.TRANSACTION.STATUS
+activate kafka
+kafka --> ms: consume APPROVED status
+deactivate kafka
+
+' Sell transaction condition
+opt If sell transaction\nCredit to user balance
+dfs -> dfs: PTWS/Operation Staffs will settle\nthe approved sell transactions
+dfs -> mdw: Credit settled units to user balance
+activate mdw
+mdw --> dfs: response success/failed 
+deactivate mdw
+dfs -> kafka: publish status SETTLED transaction\nto ID.JENIUS.INVESTMENT.TRANSACTION.STATUS
+activate kafka
+kafka --> ms: consume SETTLED status
+deactivate kafka
+end opt
+' End Sell transaction condition
+
+opt If transaction failed
+dfs -> dfs: PTWS or system will unverify transaction
+dfs -> kafka: publish status UNVERIFIED transaction\nto ID.JENIUS.INVESTMENT.TRANSACTION.STATUS
+activate kafka
+kafka --> ms: consume UNVERIFIED status
+deactivate kafka
+dfs -> dfs: PTWS will delete the unverified transactions
+dfs -> kafka: publish status DELETED transaction\nto ID.JENIUS.INVESTMENT.TRANSACTION.STATUS
+activate kafka
+kafka --> ms: consume DELETED status
+deactivate kafka
+end opt
+
+deactivate dfs
+
+@enduml
