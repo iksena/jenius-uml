@@ -1,0 +1,131 @@
+@startuml open account
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+queue "BTPN\nKafka" as kafka
+participant "Additiv\nDFS" as dfs
+participant "KSEI\nS-Invest" as ksei
+
+activate app
+app -> ms: GraphQL mutation\nregisterInvestmentAccount
+note right
+registerInvestmentAccount(input: RegisterInvestmentAccountInput!)
+input RegisterInvestmentAccountInput {
+  education: String!
+}
+end note
+activate ms
+ms -> ms: get and map profile data
+ms -> kafka: Publish customer data\nID.JENIUS.INVESTMENT.RISKPROFILE.REQUEST
+note right
+{ 
+  "ChannelID ": "02",
+  "CIF": "2458O7",
+  "_Questionnaire": [
+    { 
+      "QuestionNo": 1,
+      "Answer": "E",
+      "Type": "RISK"
+    },
+    {
+      "QuestionNo": 2,
+      "Answer": "B",
+      "Type": "RISK"
+     }
+  ],
+  "CustomerData":  { 
+    "Name": "Loyal Customer",
+    "DOB": "1970-01-01",
+    "Sex": "L",
+    "Religion": "1",
+    "Education": "4",
+    "PlaceOfBirth": "JAKARTA",
+    "Nationality": "ID",
+    "Marital": "2",
+    "IdCardNo": "123124565750008",
+    "IdCardType": "1",
+    "ExpiredDate": "2025-01-01",
+    "TaxNo": "",
+    "OccupationSubject": "15-Non Formal Lainnya",
+    "MainIncomeGrossPerYear": "4",
+    "SourceMainIncome": "1",
+    "Objective": "1",
+    "Email": "TEST3984@BTPN.COM",
+    "MobilePhoneNo": "08595849484",
+    "address": [
+      { 
+        "PhoneNo": "", 
+        "Address": "JL. PRAMUKA NO 201 KEMANG MAMPANG",
+        "AddressType": "1",
+        "Country": "ID",
+        "City": "0395",
+        "KodePos": "22910"
+      },
+      { 
+        "PhoneNo": "", 
+        "Address": "GREEN VILLE BLOK",
+        "AddressType": "2",
+        "Country": "ID",
+        "City": "0395",
+        "KodePos": "12180"
+      }
+    ],
+    "bankAccount": [
+      { 
+        "BranchCode": "0019",
+        "BranchName": "KC YOGYAKARTA",
+        "AccountType": "EG",
+        "Currency": "IDR",
+        "AccountNo": "00193000061",
+        "AccountName": "TESTING 20"
+      },
+      { 
+        "BranchCode": "0002",
+        "BranchName": "KANTOR Cabang Jakarta",
+        "AccountType": "EL",
+        "Currency": "USD",
+        "AccountNo": "04610004423",
+        "AccountName": "widi test 2"
+      }
+    ]
+  },
+  "actionType": "C", 
+  "SIDRequested": "",
+  "CustomerID": "0", # selalu 0
+  "referenceNumber": "RN01" # generated 
+}
+end note
+activate kafka
+ms --> app: response request accepted
+deactivate ms
+deactivate app
+kafka --> dfs: consume register account
+deactivate kafka
+activate dfs
+dfs -> ksei: PTWS batch upload customer data
+dfs -> kafka: Publish response customer registration\nID.JENIUS.INVESTMENT.CUSTOMER.KSEI
+note left
+{
+  "CIF": "0000Y3",
+  "RiskProfileStatusCode": 3,
+  "RiskProfileName": "Moderat",
+  "RiskProfileExpiryDate": "2021-01-19T00:00:00",
+  "SID": "IDD1604K7688567",
+  "IFUA": "BTP690000Y3F0148",
+  "SIDCorporateBond": null,
+  "SIDGovernmentBond": null,
+  "SubRegistryExpiredFlag": false,
+  "SIDMFStatus": "Sukses",
+  "referenceNumber": "RN01"
+}
+**SIDMFStatus** error values:
+1. NIK Not Found in Dukcapil Online
+2. Error due to duplicated SID received from SID Generator
+3. Date of Birth or Gender not Match
+4. Duplicate SID Possibility
+end note
+deactivate dfs
+activate kafka
+kafka --> ms: consume registration status
+deactivate kafka
+
+@enduml

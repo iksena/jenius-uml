@@ -1,0 +1,117 @@
+@startuml risk profiles
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+participant "Additiv\nDFS" as dfs
+
+activate app
+note over app: **Create risk profile**
+app -> ms: GraphQL mutation\nriskProfileAssessment
+activate ms
+note right
+riskProfileAssessment(input: [RiskProfileAssessmentInput]!)
+input RiskProfileAssessmentInput {
+  questionNumber: Int!
+  answer: String!
+}
+end note
+ms -> dfs: POST /risk-profiles
+note left
+ChannelID: 02
+CIF: String
+_Questionnaire: [
+  {
+    QuestionNo: Number
+    Answer: String
+    Type: "RISK"
+  }
+]
+actionType: C/U
+referenceNumber: String
+end note
+activate dfs
+dfs -> dfs: calculate risk profile result
+dfs --> ms: response risk profile result
+note right
+{
+  ErrorCode: "0000",
+  IsSuccess: true,
+  Message: String,
+  ResponseCode: null,
+  SolutionCode: null,
+  Result: {
+    CIF: String,
+    ClientDt: ISODate,
+    IFUA: String,
+    RefId: String,
+    RiskProfileExpDt: Date,
+    RiskProfileID: Number,
+    RiskProfileName: String,
+    SIDCorpBonds: null,
+    SIDGovBonds: null,
+    SIDMF: String
+    SIDMFStatus: String
+  }
+}
+**RiskProfileID: RiskProfileName**
+1: Conservative
+2: Moderate Conservative
+3: Moderate
+4: Moderate Aggressive
+5: Aggressive
+end note
+deactivate dfs
+ms --> app: return risk profile result
+deactivate ms
+
+note over app: **Get risk profile recommendation**
+app -> ms: GraphQL query riskProfileDetail
+note right
+riskProfileDetail {
+  validUntil
+  category
+  recommendation {
+    percentage
+    productCategory
+    productCategoryName
+  }
+}
+end note
+activate ms
+ms -> dfs: GET /InquiryRiskProfile
+activate dfs
+dfs --> ms: response risk profile result
+deactivate dfs
+ms -> ms: map category (RiskProfileID) \nwith composition managed by Jenius Admin
+ms --> app: return risk profile detail
+note right
+{
+  result: 'Moderate Aggressive',
+  category: 4,
+  validUntil: Date,
+  recommendation: [
+    {
+      productCategory: 1,
+      productCategoryName: 'Money Market',
+      percentage: 20
+    },
+    {
+      productCategory: 2,
+      productCategoryName: 'Fixed Income Short',
+      percentage: 30
+    },
+    {
+      productCategory: 3,
+      productCategoryName: 'Fixed Income Long',
+      percentage: 20
+    },
+    {
+      productCategory: 4,
+      productCategoryName: 'Equity',
+      percentage: 30
+    }
+  ]
+}
+end note
+deactivate ms
+deactivate app
+@enduml

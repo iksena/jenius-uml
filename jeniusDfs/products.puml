@@ -1,0 +1,121 @@
+@startuml products
+participant "Additiv\nDFS" as dfs
+queue "BTPN\nKafka" as kafka
+participant "BTPN\nJenius Microservices" as ms
+
+activate dfs
+dfs -> kafka: Publish product data\nevery day at 00.00, 10.00, and 14.00\nID.JENIUS.INVESTMENT.PRODUCT.CATALOG
+note left
+[
+    {
+        "ProductCode": "ADENEQ",
+        "ProductName": "Ashmore Dana Ekuitas",
+        "RiskProfileProductCode": 1,
+        "RiskProfileProductName": "Konservatif",
+        "FundHouseCode": "EL002",
+        "FundHouseName": "Ashmore Asset Management Indonesia",
+        "CustodianBankCode": 85,
+        "CustodianBankName": "Bank Central Asia",
+        "Currency": "IDR",
+        "NAV": 0.0,
+        "NAVDate": "1900-01-01T00:00:00",
+        "Tax": 0.0,
+        "ProductCategory": "Money Market",
+        "MinSubs": 100000.0,
+        "SubsFee": 0.0,
+        "RedFee": 0.0,
+        "SwtFee": 0.0,
+        "HolidayFlag": false,
+        "AllowSub": 1,
+        "AllowRedemption": 1,
+        "AllowSwitching": 1,
+        "AllowTopUp": 1,
+        "AllowInstallment": 1,
+        "AllowReguler": 1,
+        "MinRedUnit": 1000,
+        "MinBalanceAfterRed": 100,
+        "MinSwitchUnit": 1000,
+        "MinBalanceAfterSwitch": 100,
+        "OneYear": 21,42857143
+    }
+]
+end note
+activate kafka
+kafka --> ms: consume product list\nmap and insert to database
+deactivate kafka
+note over ms
+Jenius Admin will manage
+product availability, image, and name
+end note
+
+dfs -> kafka: Publish product NAV\nevery day at 00.00, 10.00, and 14.00\nID.JENIUS.INVESTMENT.PRODUCT.NAV
+note left
+[
+  {
+    ProductCode: 'ADENEQ',
+    HolidayFlag: false,
+    CurrentDate: '2019-11-15T00:00:00',
+    CurrentValue: 4315.49,
+    1DayDate: '2019-11-14T00:00:00',
+    1DayValue: 4298.35,
+    1DayDiff: 17.14,
+    1DayPercent: 0.4,
+    1DayFlag: true,
+    3DayDate: '2019-11-12T00:00:00',
+    3DayValue: 4361.26,
+    3DayDiff: -45.77,
+    3DayPercent: -1.05,
+    3DayFlag: false,
+    7DayDate: '2019-11-06T00:00:00',
+    7DayValue: 4406.38,
+    7DayDiff: -90.89,
+    7DayPercent: -2.06,
+    7DayFlag: false,
+    14DayDate: '2019-10-28T00:00:00',
+    14DayValue: 4491.75,
+    14DayDiff: -176.26,
+    14DayPercent: -3.92,
+    14DayFlag: false,
+    1MDate: '2019-12-17T00:00:00',
+    1MValue: 4378.5,
+    1MDiff: -63.01,
+    1MPercent: -1.44,
+    1MFlag: false,
+    3MDate: '2020-02-17T00:00:00',
+    3MValue: null,
+    3MDiff: null,
+    3MPercent: null,
+    3MFlag: false,
+    YTDDate: '2019-01-02T00:00:00',
+    YTDValue: 4595.68,
+    YTDDiff: -280.19,
+    YTDPercent: 21.42857143,
+    YTDFlag: false,
+    1YDate: '2020-11-17T00:00:00',
+    1YValue: null,
+    1YDiff: null,
+    1YPercent: 11,
+    1YFlag: false,
+    3YDate: '2022-11-17T00:00:00',
+    3YValue: null,
+    3YDiff: null,
+    3YPercent: null,
+    3YFlag: false,
+    5YDate: '2024-11-15T00:00:00',
+    5YValue: null,
+    5YDiff: null,
+    5YPercent: null,
+    5YFlag: false
+  }
+]
+end note
+activate kafka
+kafka --> ms: consume product NAV list\nmap and insert to database
+deactivate kafka
+note over ms
+Historical NAV will be shown
+as chart in app
+end note
+deactivate dfs
+
+@enduml

@@ -2,7 +2,6 @@
 participant "Apps" as app
 participant "BTPN\nJenius Microservices" as ms
 participant "Additiv\nDFS" as dfs
-participant "KSEI\nS-Invest" as ksei
 
 activate app
 app -> ms: GraphQL query\nforecastTransactions
