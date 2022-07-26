@@ -1,0 +1,91 @@
+@startuml bancassurance
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+participant "Additiv\nDFS" as dfs
+
+activate app
+app -> ms: GraphQL query bancassurance
+note right
+assets {
+  bancassurance {
+    total
+    products {
+      originalAmount
+      productName
+      fundName
+      navPerUnitAmount
+      navDate
+      totalUnitCount
+      originalCcyCode
+    }
+  }
+}
+end note
+activate ms
+ms -> dfs: GET /InquiryCustomerPortfolio?category=BA
+activate dfs
+dfs --> ms: return bancassurance data
+note right
+{
+  "totalRecord": 2,
+  "listInformation": [
+    {
+      "polisNumber": "000066248956",
+      "accountNumber": "BTP693584ZUF0168",
+      "accountOpenDate": "2018-07-19",
+      "accountName": "AZMI GHALIB AUSTIN",
+      "sourceSystemCode": "WMS",
+      "navDate": "2021-07-02",
+      "crn": "013584ZU",
+      "cif": "3584ZU",
+      "productCode": "BASE_GWL",
+      "productName": "GUARDIA WEALTHLINK",
+      "originalCcyCode": "USD",
+      "originalCcyDesc": "US Dollar",
+      "fundCode": "AP",
+      "fundName": "SMARTWEALTH DOLLAR ASIA PACIFIC FUND",
+      "partnerCode": "ALZ",
+      "partnerName": "PT ASURANSI ALLIANZ LIFE INDONESIA",
+      "branchCode": "0330",
+      "branchName": null,
+      "polisIndikator": "INFORCE",
+      "totalUnitCount": 2353.3558,
+      "navPerUnitAmount": 1.6676,
+      "balanceAmount": 3924.4561,
+      "createdDate": "2021-07-06"
+    },
+    {
+      "polisNumber": "000067419244",
+      "accountNumber": "BTP693584ZUF0168",
+      "accountOpenDate": "2018-07-19",
+      "accountName": "AZMI GHALIB AUSTIN",
+      "sourceSystemCode": "WMS",
+      "navDate": "2022-04-11",
+      "crn": "013584ZU",
+      "cif": "3584ZU",
+      "productCode": "BASE_GWL",
+      "productName": "GUARDIA WEALTHLINK",
+      "originalCcyCode": "IDR",
+      "originalCcyDesc": "Rupiah",
+      "fundCode": "MF",
+      "fundName": "SMARTLINK RUPIAH MONEY MARKET FUND",
+      "partnerCode": "ALZ",
+      "partnerName": "PT ASURANSI ALLIANZ LIFE INDONESIA",
+      "branchCode": "0330",
+      "branchName": null,
+      "polisIndikator": "INFORCE",
+      "totalUnitCount": 2586.283,
+      "navPerUnitAmount": 3287.18,
+      "balanceAmount": 8501577.7519,
+      "createdDate": "2022-04-13"
+    }
+  ]
+}
+end note
+deactivate dfs
+ms -> ms: calculate total with Jenius forex rates
+ms --> app: return bancassurance
+deactivate ms
+deactivate app
+
+@enduml

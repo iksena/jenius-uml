@@ -1,9 +1,12 @@
 @startuml portfolios
 participant "Apps" as app
 participant "BTPN\nJenius Microservices" as ms
+collections "Redis" as redis
+collections "DB Investment" as db
 participant "Additiv\nDFS" as dfs
 
 activate app
+note over app: **Portfolio List**
 app -> ms: GraphQL query portfolios
 note right
 portfolios {
@@ -160,9 +163,74 @@ dfs --> ms: return portofolios
 deactivate dfs
 ms -> ms: map subaccounts with portfolios
 note right
-subAccount = Goal Code(3) + Product Code(≥6) + CIF(6) + Incremental Number (3)
+subAccount = Goal Code(3) + Product Code(6+) + CIF(6) + Incremental Number(3)
+end note
+ms -> redis: Save to redis
+note right
+**key**: CIF
+**value**:
+ADH: {
+	goalCode: 'ADH',
+	name: 'Wedding Investment',
+	products: [{
+		id: 'ADHADENEQ2275PC001'
+		productCode: 'ADENEQ'
+		currency: 'IDR'
+		unit: 100
+		amount: 388126
+		unrealizedGainLoss: 237391.36
+		uglPercentage: 2.2329
+		purchasePrice: 10631476.5
+		navPerUnit: 1000.6562
+		navDate: null
+		productName: 'Ashmore Dana Equity',
+		status: 'AVAILABLE'
+		imageUri: '/image.png'
+		assetClass: '1'
+		display: true
+	}]
+}
+end note
+ms -> db: Save to database
+note right
+cif: String
+name: String
+goalCode: String(3)
+image: String
 end note
 ms --> app: return portfolios
+deactivate ms
+note over app: **Portfolio Detail**
+app -> ms: GraphQL query portfolio
+note right
+portfolio(goalCode: String) {
+  goalCode: String!
+  name: String!
+  products {
+    id: String
+    productCode: String!
+    productName: String,
+    status: String
+    amount: Float
+    unrealizedGainLoss: Float
+    uglPercentage: Float
+    purchasePrice: Float
+    navPerUnit: Float
+    navDate: String
+    unit: Float
+    currency: String
+    imageUri: String
+    assetClass: String
+    display: Boolean
+  }
+}
+end note
+activate ms
+ms -> dfs: GET /InquiryCustomerPortfolio?goalCode={GoalCode}
+activate dfs
+dfs --> ms: return portfolio detail
+deactivate dfs
+ms --> app: return portfolio detail
 deactivate ms
 deactivate app
 

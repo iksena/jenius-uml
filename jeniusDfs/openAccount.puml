@@ -102,6 +102,9 @@ kafka --> dfs: consume register account
 deactivate kafka
 activate dfs
 dfs -> ksei: PTWS batch upload customer data
+activate ksei
+ksei --> dfs: return SID and IFUA customers
+deactivate ksei
 dfs -> kafka: Publish response customer registration\nID.JENIUS.INVESTMENT.CUSTOMER.KSEI
 note left
 {
