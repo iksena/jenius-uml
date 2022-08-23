@@ -1,6 +1,7 @@
 @startuml open account
 participant "Apps" as app
 participant "BTPN\nJenius Microservices" as ms
+collections "DB Investment" as db
 queue "BTPN\nKafka" as kafka
 participant "Additiv\nDFS" as dfs
 participant "KSEI\nS-Invest" as ksei
@@ -20,18 +21,6 @@ note right
 { 
   "ChannelID ": "02",
   "CIF": "2458O7",
-  "_Questionnaire": [
-    { 
-      "QuestionNo": 1,
-      "Answer": "E",
-      "Type": "RISK"
-    },
-    {
-      "QuestionNo": 2,
-      "Answer": "B",
-      "Type": "RISK"
-     }
-  ],
   "CustomerData":  { 
     "Name": "Loyal Customer",
     "DOB": "1970-01-01",
@@ -120,15 +109,34 @@ note left
   "SIDMFStatus": "Sukses",
   "referenceNumber": "RN01"
 }
-**SIDMFStatus** error values:
-1. NIK Not Found in Dukcapil Online
-2. Error due to duplicated SID received from SID Generator
-3. Date of Birth or Gender not Match
-4. Duplicate SID Possibility
+**FailType**:**SIDMFStatus** error from KSEI:
+1: Date of Birth or Gender not Match
+2: Duplicate SID Possibility
+3: Error due to duplicated SID received from SID Generator
+4: NIK Not Found in Dukcapil Online
+error from WMS:
+5: Foreigner with invalid ID
+6: Default
+7: Foreigner is US citizen
+8: Fail mapping customer data in WMS
+9: Customer Nationality is ID and idType is not KTP
 end note
 deactivate dfs
 activate kafka
 kafka --> ms: consume registration status
+activate ms
+ms -> db: Update accounts collection
+note right
+cif: String <- CIF
+status: REGISTERED/VERIFYING/UNREGISTERED/FAILED
+sid: String <- SID
+ifua: String <- IFUA
+sidMfStatus: String <- SIDMFStatus
+failDescription: String, mapped into 9 errors from SIDMFStatus
+failType: 1-9
+modifiedAt: ISODate
+end note
+deactivate ms
 deactivate kafka
 
 @enduml

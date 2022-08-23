@@ -1,6 +1,7 @@
 @startuml risk profiles
 participant "Apps" as app
 participant "BTPN\nJenius Microservices" as ms
+collections "DB Investment" as db
 participant "Additiv\nDFS" as dfs
 
 activate app
@@ -60,6 +61,15 @@ note right
 5: Aggressive
 end note
 deactivate dfs
+ms -> db: Save to riskProfiles
+note right
+cif: String <- CIF
+result: String <- RiskProfileName
+category: Int <- RiskProfileID
+validUntil: ISODate <- RiskProfileExpDt
+answers: Array[<{questionNumber: Int, answer: String}>]
+modifiedAt: ISODate
+end note
 ms --> app: return risk profile result
 deactivate ms
 
@@ -77,41 +87,37 @@ riskProfileDetail {
 }
 end note
 activate ms
-ms -> dfs: GET /InquiryRiskProfile
+ms -> dfs: GET /risk-profile-recommendations
 activate dfs
-dfs --> ms: response risk profile result
+dfs --> ms: response risk profile recommendations
+note right
+[
+  {
+    productCategory: 1,
+    productCategoryName: 'Money Market',
+    percentage: 20
+  },
+  {
+    productCategory: 2,
+    productCategoryName: 'Fixed Income Short',
+    percentage: 30
+  },
+  {
+    productCategory: 3,
+    productCategoryName: 'Fixed Income Long',
+    percentage: 20
+  },
+  {
+    productCategory: 4,
+    productCategoryName: 'Equity',
+    percentage: 30
+  }
+]
+end note
 deactivate dfs
+ms <-- db: Query from riskProfiles
 ms -> ms: map category (RiskProfileID) \nwith composition managed by Jenius Admin
 ms --> app: return risk profile detail
-note right
-{
-  result: 'Moderate Aggressive',
-  category: 4,
-  validUntil: Date,
-  recommendation: [
-    {
-      productCategory: 1,
-      productCategoryName: 'Money Market',
-      percentage: 20
-    },
-    {
-      productCategory: 2,
-      productCategoryName: 'Fixed Income Short',
-      percentage: 30
-    },
-    {
-      productCategory: 3,
-      productCategoryName: 'Fixed Income Long',
-      percentage: 20
-    },
-    {
-      productCategory: 4,
-      productCategoryName: 'Equity',
-      percentage: 30
-    }
-  ]
-}
-end note
 deactivate ms
 deactivate app
 @enduml

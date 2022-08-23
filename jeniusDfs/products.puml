@@ -2,57 +2,42 @@
 participant "Additiv\nDFS" as dfs
 queue "BTPN\nKafka" as kafka
 participant "BTPN\nJenius Microservices" as ms
+collections "DB Investment" as db
 
 activate dfs
-dfs -> kafka: Publish product data\nevery day at 00.00, 10.00, and 14.00\nID.JENIUS.INVESTMENT.PRODUCT.CATALOG
-note left
-[
-    {
-        "ProductCode": "ADENEQ",
-        "ProductName": "Ashmore Dana Ekuitas",
-        "RiskProfileProductCode": 1,
-        "RiskProfileProductName": "Konservatif",
-        "FundHouseCode": "EL002",
-        "FundHouseName": "Ashmore Asset Management Indonesia",
-        "CustodianBankCode": 85,
-        "CustodianBankName": "Bank Central Asia",
-        "Currency": "IDR",
-        "NAV": 0.0,
-        "NAVDate": "1900-01-01T00:00:00",
-        "Tax": 0.0,
-        "ProductCategory": "Money Market",
-        "MinSubs": 100000.0,
-        "SubsFee": 0.0,
-        "RedFee": 0.0,
-        "SwtFee": 0.0,
-        "HolidayFlag": false,
-        "AllowSub": 1,
-        "AllowRedemption": 1,
-        "AllowSwitching": 1,
-        "AllowTopUp": 1,
-        "AllowInstallment": 1,
-        "AllowReguler": 1,
-        "MinRedUnit": 1000,
-        "MinBalanceAfterRed": 100,
-        "MinSwitchUnit": 1000,
-        "MinBalanceAfterSwitch": 100,
-        "OneYear": 21,42857143
-    }
-]
-end note
-activate kafka
-kafka --> ms: consume product list\nmap and insert to database
-deactivate kafka
-note over ms
-Jenius Admin will manage
-product availability, image, and name
-end note
-
-dfs -> kafka: Publish product NAV\nevery day at 00.00, 10.00, and 14.00\nID.JENIUS.INVESTMENT.PRODUCT.NAV
+dfs -> kafka: Publish every available product data\nevery day at 00.00, 10.00, and 14.00\nID.JENIUS.INVESTMENT.PRODUCT.CATALOG
 note left
 [
   {
-    ProductCode: 'ADENEQ',
+    "ProductCode": "ADENEQ",
+    "ProductName": "Ashmore Dana Ekuitas",
+    "RiskProfileProductCode": 1,
+    "RiskProfileProductName": "Konservatif",
+    "FundHouseCode": "EL002",
+    "FundHouseName": "Ashmore Asset Management Indonesia",
+    "CustodianBankCode": 85,
+    "CustodianBankName": "Bank Central Asia",
+    "Currency": "IDR",
+    "NAV": 0.0,
+    "NAVDate": "1900-01-01T00:00:00",
+    "Tax": 0.0,
+    "ProductCategory": "Money Market",
+    "MinSubs": 100000.0,
+    "SubsFee": 0.0,
+    "RedFee": 0.0,
+    "SwtFee": 0.0,
+    "HolidayFlag": false,
+    "AllowSub": 1,
+    "AllowRedemption": 1,
+    "AllowSwitching": 1,
+    "AllowTopUp": 1,
+    "AllowInstallment": 1,
+    "AllowReguler": 1,
+    "MinRedUnit": 1000,
+    "MinBalanceAfterRed": 100,
+    "MinSwitchUnit": 1000,
+    "MinBalanceAfterSwitch": 100,
+    "OneYear": 21,42857143
     HolidayFlag: false,
     CurrentDate: '2019-11-15T00:00:00',
     CurrentValue: 4315.49,
@@ -106,16 +91,114 @@ note left
     5YDiff: null,
     5YPercent: null,
     5YFlag: false
-  }
+  },
+  ...
 ]
 end note
-activate kafka
-kafka --> ms: consume product NAV list\nmap and insert to database
-deactivate kafka
-note over ms
-Historical NAV will be shown
-as chart in app
-end note
 deactivate dfs
+activate kafka
+kafka --> ms: consume product list\nmap and insert to database
+deactivate kafka
+activate ms
+note over ms
+Jenius Admin will manage
+product availability, image, name, prospectus, FFS, etc.
+end note
+ms -> db: Upsert to activeProducts
+note right
+{
+  "productCode": "ADENEQ",
+  "productName": "RD Ashmore Dana Ekuitas Nusantara",
+  "riskProfileProductCode": 3,
+  "riskProfileProductName": "Moderat",
+  "fundHouseCode": "EL002",
+  "fundHouseName": "Ashmore Asset Management Indonesia",
+  "custodianBankCode": 84,
+  "custodianBankName": "The Hongkong and Shanghai Banking Corporation Lim",
+  "custodianBankNickname": "HSBC",
+  "currency": "IDR",
+  "tax": 11,
+  "productCategory": "Equity",
+  "productCategoryEN": "Equity",
+  "productCategoryID": "Ekuitas",
+  "minSubs": 200000,
+  "subsFee": 1.5,
+  "redFee": 2,
+  "swtFee": 3,
+  "holidayFlag": false,
+  "minRedUnit": 100,
+  "minBalanceAfterRed": 200,
+  "minSwitchUnit": 7,
+  "minBalanceAfterSwitch": 0,
+  "allowSub": true,
+  "allowRed": true,
+  "allowSwitching": true,
+  "allowTopUp": true,
+  "allowInstallment": false,
+  "allowReguler": false,
+  "oneYear": -50,
+  "currentDate": "2022-03-22T00:00:00",
+  "currentValue": 1000,
+  "date1Day": "2022-03-21T00:00:00",
+  "value1Day": null,
+  "diff1Day": null,
+  "percent1Day": null,
+  "flag1Day": false,
+  "date3Day": "2022-03-17T00:00:00",
+  "value3Day": 1000,
+  "diff3Day": 0,
+  "percent3Day": 0,
+  "flag3Day": true,
+  "date7Day": "2022-03-11T00:00:00",
+  "value7Day": null,
+  "diff7Day": null,
+  "percent7Day": null,
+  "flag7Day": false,
+  "date14Day": "2022-03-02T00:00:00",
+  "value14Day": null,
+  "diff14Day": null,
+  "percent14Day": null,
+  "flag14Day": false,
+  "date1M": "2022-02-21T00:00:00",
+  "value1M": 3560,
+  "diff1M": -2560,
+  "percent1M": -71.91,
+  "flag1M": false,
+  "date3M": "2021-12-21T00:00:00",
+  "value3M": null,
+  "diff3M": null,
+  "percent3M": null,
+  "flag3M": false,
+  "YTDDate": "2022-01-03T00:00:00",
+  "YTDValue": null,
+  "YTDDiff": null,
+  "YTDFlag": false,
+  "YTDPercent": null,
+  "date1Y": "2021-03-19T00:00:00",
+  "value1Y": 2000,
+  "diff1Y": -1000,
+  "percent1Y": -50,
+  "flag1Y": false,
+  "date3Y": "2019-03-21T00:00:00",
+  "value3Y": 1593.76,
+  "diff3Y": -593.76,
+  "percent3Y": -37.26,
+  "flag3Y": false,
+  "date5Y": "2017-03-21T00:00:00",
+  "value5Y": null,
+  "diff5Y": null,
+  "percent5Y": null,
+  "flag5Y": false,
+  "assetClass": "1",
+  "assetClassName": "Money Market",
+  "imageUri": "assets/imagesTest.jpg",
+  "nickname": "Ashmore",
+  "investmentManagerStatus": "ACTIVE",
+  "fundFactSheetUri": "assets/investment/fundfactsheet/ADENEQ_FFS.pdf",
+  "prospectusUri": "assets/investment/prospectus/ADENEQ-prospectus.pdf",
+  "modifiedAt": "2022-06-22T03:00:04.893Z"
+}
+end note
+deactivate ms
 
 @enduml

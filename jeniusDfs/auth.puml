@@ -1,0 +1,129 @@
+@startuml bancassurance
+participant "Apps" as app
+participant "ms-investment" as mi
+participant "ms-investment-auth" as auth
+collections "investment-auth" as dbauth
+participant "ms-user-preference" as mup
+participant "Additiv\nDFS" as dfs
+participant "Additiv\nIdentity Server" as ids
+
+activate app
+app -> mi: query account detail
+activate mi
+mi -> auth: GET /tokens
+activate auth
+
+alt get session
+auth -> auth: get session from in-memory 
+else fallback to DB
+auth -> dbauth: query session by cif
+dbauth --> auth: return session
+note right
+{
+    cif
+    sessionId
+    expiredAt
+}
+end note
+end
+
+opt if sessionId exists
+auth -> dfs: /v1.1/contacts/{contactId}/authentication/tokens/{sessionId}
+activate dfs
+dfs --> auth: return sessionId and accessToken
+auth -> dbauth: save session to db and in-memory
+deactivate dfs
+auth -> mi: return SSO token
+end
+
+auth -> ids: POST /connect/token
+note right
+scope: DfsApi
+grant_type: contact
+client_id: Client ID
+client_secret: Client Secret
+access_token: ClientCredentials token
+cid: 0 
+sub: CRN/CIF
+end note
+activate ids
+ids --> auth: return contact token
+deactivate ids
+
+auth -> dfs: POST /v1.0/authentication/authenticate/sso
+note right
+AccessToken: contact token
+end note
+activate dfs
+dfs --> auth: return SSO token
+auth -> dbauth: save session to db and in-memory
+auth --> mi: return SSO token
+
+opt if contact not exists
+dfs --> auth: return Result: "ContactExternalInvalid"
+deactivate dfs
+auth -> mup: GET /profile
+activate mup
+mup --> auth: return user data
+deactivate mup
+auth -> dfs: POST /v1.0/contacts
+note right
+{
+    "ContactTypeId": 1,
+    "Details": {
+        "communicationMethods": {
+            "primaryEmail": "investmentqa05@sit.com",
+            "primaryPhoneNumber": "87712345678",
+            "primaryPhoneCountryCode": "ID",
+            "primaryAddressCountry": "ID"
+        },
+        "personalInformation": {
+            "firstName": "Sena",
+            "lastName": "Aji",
+            "identification": [{"countryOfNationality": "ID"}]
+        }
+    }
+}
+end note
+activate dfs
+dfs --> auth: return contactId
+deactivate dfs
+auth -> ids: POST /connect/token
+note right
+scope: DfsApi
+grant_type: contact
+client_id: Client ID
+client_secret: Client Secret
+access_token: ClientCredentials token
+cid: contactId
+sub: CRN/CIF
+end note
+activate ids
+ids --> auth: return contact token
+deactivate ids
+auth -> dfs: POST /v1.0/contacts/{{ContactId}}/externalConnections
+activate dfs
+note right
+"externalId": CRN/CIF
+"system": "Default"
+end note
+auth -> dfs: POST /v1.0/contacts/{{ContactId}}/activate
+auth -> dfs: POST /v1.0/authentication/authenticate/sso
+note right
+AccessToken: contact token
+end note
+dfs --> auth: return SSO token
+deactivate dfs
+auth -> dbauth: save session to db and in-memory
+auth --> mi: return SSO token
+end
+
+deactivate auth
+
+mi -> dfs: GET /v1.1/contacts/{contactId}/accounts/{accountId}
+activate dfs
+dfs --> mi: return account detail
+deactivate dfs
+mi --> app: return account data
+deactivate mi
+deactivate app

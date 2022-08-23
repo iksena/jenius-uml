@@ -1,6 +1,7 @@
 @startuml transactions
 participant "Apps" as app
 participant "BTPN\nJenius Microservices" as ms
+collections "DB Investment\nTransaction" as db
 queue "BTPN\nKafka" as kafka
 participant "BTPN\nMDW-EQ" as mdw
 participant "Additiv\nDFS" as dfs
@@ -55,6 +56,32 @@ note right
   Remark: '',
   HoldID: 0,
   RefNo: {referenceNo}
+}
+end note
+ms -> db: Save to database\ninflightTransaction
+note right
+{
+  "cif": "1AAAR8",
+  "type": "SUB",
+  "currency": "IDR",
+  "navPerUnit": 0,
+  "productCode": "ADPUNM",
+  "amount": 200000,
+  "fee": 2703,
+  "tax": 297,
+  "subAccount": "",
+  "productGLAccount": "05373001734",
+  "goalCode": "001",
+  "productName": "RD Ashmore Dana Pasar Uang Nusantara ",
+  "imageUri": "assets/imagesTest.jpg",
+  "assetClass": "3",
+  "source": "90120002646",
+  "referenceNo": "NIH8418RAAA1",
+  "createdAt": "2022-07-20T10:35:36.839Z",
+  "modifiedAt": "2022-07-20T10:39:25.912Z",
+  "status": "PENDING_DEBIT",
+  "hasSentKafkaTransactionRequest": false,
+  "hasSentKafkaJournalRequest": false
 }
 end note
 ms --> app: response transaction accepted
@@ -117,7 +144,35 @@ note left
 end note
 activate kafka
 kafka --> ms: consume VERIFIED status
+activate ms
 deactivate kafka
+ms -> db: Update database\ninflightTransaction
+note right
+cif: String
+status: TransactionStatus <- from kafka
+type: TransactionCategory <- from kafka
+amount: NetAmount <- from kafka
+fee: FeeAmount <- from kafka
+tax: TaxAmount <- from kafka
+units: Unit <- from kafka
+subAccount: NoAccount <- from kafka
+referenceNo: RefNo <- from kafka,
+navDate: NAVDate <- from kafka
+createdAt: TransactionDate <- from kafka
+modifiedAt: SettlementDate <- from kafka
+currency: IDR/USD
+navPerUnit: Number
+productCode: String
+productGLAccount: Number
+goalCode: String
+productName: String
+imageUri: String
+assetClass: Number
+source: Number
+hasSentKafkaTransactionRequest: Boolean,
+hasSentKafkaJournalRequest: Boolean
+end note
+deactivate ms
 
 dfs -> dfs: PTWS/Operation Staffs approve transactions\nby updating current NAV
 dfs -> ksei: Report transaction to KSEI
@@ -125,6 +180,9 @@ dfs -> kafka: publish status APPROVED transaction\nwith calculated units\nto ID.
 activate kafka
 kafka --> ms: consume APPROVED status
 deactivate kafka
+activate ms
+ms -> db: Update database\ninflightTransaction
+deactivate ms
 
 ' Sell transaction condition
 opt If sell transaction\nCredit to user balance
@@ -137,6 +195,9 @@ dfs -> kafka: publish status SETTLED transaction\nto ID.JENIUS.INVESTMENT.TRANSA
 activate kafka
 kafka --> ms: consume SETTLED status
 deactivate kafka
+activate ms
+ms -> db: Update database\ninflightTransaction
+deactivate ms
 end opt
 ' End Sell transaction condition
 
@@ -146,11 +207,18 @@ dfs -> kafka: publish status UNVERIFIED transaction\nto ID.JENIUS.INVESTMENT.TRA
 activate kafka
 kafka --> ms: consume UNVERIFIED status
 deactivate kafka
+activate ms
+ms -> db: Update database\ninflightTransaction
+deactivate ms
+
 dfs -> dfs: PTWS will delete the unverified transactions
 dfs -> kafka: publish status DELETED transaction\nto ID.JENIUS.INVESTMENT.TRANSACTION.STATUS
 activate kafka
 kafka --> ms: consume DELETED status
 deactivate kafka
+activate ms
+ms -> db: Update database\ninflightTransaction
+deactivate ms
 end opt
 
 deactivate dfs
