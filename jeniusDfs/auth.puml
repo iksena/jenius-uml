@@ -1,14 +1,15 @@
-@startuml bancassurance
+@startuml auth
 participant "Apps" as app
 participant "ms-investment" as mi
 participant "ms-investment-auth" as auth
 collections "investment-auth" as dbauth
 participant "ms-user-preference" as mup
+participant "Common Service" as cs
 participant "Additiv\nDFS" as dfs
 participant "Additiv\nIdentity Server" as ids
 
 activate app
-app -> mi: query account detail
+app -> mi: query risk profile
 activate mi
 mi -> auth: GET /tokens
 activate auth
@@ -22,20 +23,43 @@ note right
 {
     cif
     sessionId
+    accessToken
     expiredAt
 }
 end note
 end
 
-opt if sessionId exists
-auth -> dfs: /v1.1/contacts/{contactId}/authentication/tokens/{sessionId}
+opt if session exists
+auth -> mi: return SSO token
+end
+
+opt if session exists AND expiredAt < current date
+auth -> dfs: /v1.0/contacts/{contactId}/authentication/tokens/renew/sso
 activate dfs
-dfs --> auth: return sessionId and accessToken
+dfs --> auth: return accessToken
 auth -> dbauth: save session to db and in-memory
 deactivate dfs
 auth -> mi: return SSO token
 end
 
+auth -> cs: POST /v01/customers/searchWithAccount
+note right
+{
+    "filters": [
+        {
+            "key": "cif", 
+            "value": "1AG8DC"
+        },
+        {
+            "key": "accountTypeCode", 
+            "value": "EG"
+        }
+    ]
+}
+end note
+activate cs
+cs --> auth: return CRN
+deactivate cs
 auth -> ids: POST /connect/token
 note right
 scope: DfsApi
@@ -44,7 +68,7 @@ client_id: Client ID
 client_secret: Client Secret
 access_token: ClientCredentials token
 cid: 0 
-sub: CRN/CIF
+sub: CRN
 end note
 activate ids
 ids --> auth: return contact token
@@ -62,25 +86,16 @@ auth --> mi: return SSO token
 opt if contact not exists
 dfs --> auth: return Result: "ContactExternalInvalid"
 deactivate dfs
-auth -> mup: GET /profile
-activate mup
-mup --> auth: return user data
-deactivate mup
 auth -> dfs: POST /v1.0/contacts
 note right
 {
     "ContactTypeId": 1,
     "Details": {
         "communicationMethods": {
-            "primaryEmail": "investmentqa05@sit.com",
-            "primaryPhoneNumber": "87712345678",
-            "primaryPhoneCountryCode": "ID",
-            "primaryAddressCountry": "ID"
-        },
-        "personalInformation": {
-            "firstName": "Sena",
-            "lastName": "Aji",
-            "identification": [{"countryOfNationality": "ID"}]
+            "primaryEmail": "96342901@additiv.com",
+            "primaryPhoneCountryCode": 433,
+            "primaryPhoneNumber": "081234567891",
+            "primaryAddressCountry": "116",
         }
     }
 }
@@ -104,7 +119,7 @@ deactivate ids
 auth -> dfs: POST /v1.0/contacts/{{ContactId}}/externalConnections
 activate dfs
 note right
-"externalId": CRN/CIF
+"externalId": CRN
 "system": "Default"
 end note
 auth -> dfs: POST /v1.0/contacts/{{ContactId}}/activate
@@ -120,10 +135,10 @@ end
 
 deactivate auth
 
-mi -> dfs: GET /v1.1/contacts/{contactId}/accounts/{accountId}
+mi -> dfs: POST /v1.1/contacts/{contactId}/questionnaires/search
 activate dfs
-dfs --> mi: return account detail
+dfs --> mi: return risk profile detail
 deactivate dfs
-mi --> app: return account data
+mi --> app: return risk profile
 deactivate mi
 deactivate app
