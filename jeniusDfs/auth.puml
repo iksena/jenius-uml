@@ -2,8 +2,7 @@
 participant "Apps" as app
 participant "ms-investment" as mi
 participant "ms-investment-auth" as auth
-collections "investment-auth" as dbauth
-participant "ms-user-preference" as mup
+collections "redis-investment-auth" as dbauth
 participant "Common Service" as cs
 participant "Additiv\nDFS" as dfs
 participant "Additiv\nIdentity Server" as ids
@@ -14,30 +13,56 @@ activate mi
 mi -> auth: GET /tokens
 activate auth
 
-alt get session
-auth -> auth: get session from in-memory 
-else fallback to DB
 auth -> dbauth: query session by cif
+activate dbauth
 dbauth --> auth: return session
 note right
 {
-    cif
     sessionId
     accessToken
     expiredAt
 }
 end note
-end
+deactivate dbauth
 
-opt if session exists
+alt if session exists AND expiredAt > current date
 auth -> mi: return SSO token
-end
-
-opt if session exists AND expiredAt < current date
-auth -> dfs: /v1.0/contacts/{contactId}/authentication/tokens/renew/sso
+else if session exists AND expiredAt <= current date
+auth -> cs: POST /v01/customers/searchWithAccount
+note right
+{
+    "filters": [
+        {
+            "key": "cif", 
+            "value": "1AG8DC"
+        },
+        {
+            "key": "accountTypeCode", 
+            "value": "EG"
+        }
+    ]
+}
+end note
+activate cs
+cs --> auth: return CRN
+deactivate cs
+auth -> ids: POST /connect/token
+note right
+scope: DfsApi
+grant_type: contact
+client_id: Client ID
+client_secret: Client Secret
+access_token: ClientCredentials token
+cid: 0 
+sub: CRN
+end note
+activate ids
+ids --> auth: return contact token
+deactivate ids
+auth -> dfs: POST /v1.0/contacts/{contactId}/authentication/tokens/renew/sso
 activate dfs
 dfs --> auth: return accessToken
-auth -> dbauth: save session to db and in-memory
+auth -> dbauth: save session to redis
 deactivate dfs
 auth -> mi: return SSO token
 end
@@ -80,7 +105,7 @@ AccessToken: contact token
 end note
 activate dfs
 dfs --> auth: return SSO token
-auth -> dbauth: save session to db and in-memory
+auth -> dbauth: save session to redis
 auth --> mi: return SSO token
 
 opt if contact not exists
@@ -92,10 +117,7 @@ note right
     "ContactTypeId": 1,
     "Details": {
         "communicationMethods": {
-            "primaryEmail": "96342901@additiv.com",
-            "primaryPhoneCountryCode": 433,
-            "primaryPhoneNumber": "081234567891",
-            "primaryAddressCountry": "116",
+            "primaryEmail": "96342901@additiv.com"
         }
     }
 }
@@ -129,7 +151,7 @@ AccessToken: contact token
 end note
 dfs --> auth: return SSO token
 deactivate dfs
-auth -> dbauth: save session to db and in-memory
+auth -> dbauth: save session to redis
 auth --> mi: return SSO token
 end
 

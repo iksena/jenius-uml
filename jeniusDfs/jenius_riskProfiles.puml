@@ -1,0 +1,199 @@
+@startuml risk profiles
+participant "Apps" as app
+participant "ms-gql" as gql
+participant "ms-investment" as ms
+collections "DB Investment" as db
+participant "Additiv\nDFS" as dfs
+
+activate app
+note over app: **Create risk profile**
+app -> gql: GraphQL mutation\nriskProfileAssessment
+activate gql
+note right
+riskProfileAssessment(input: [RiskProfileAssessmentInput]!)
+input RiskProfileAssessmentInput {
+  questionNumber: Int!
+  answer: String!
+}
+end note
+gql -> ms: POST /risk-profiles
+activate ms
+ms -> dfs: POST /v1.1/contacts/{contactId}/questionnaires/search
+note right
+{
+  "Language": "string",
+  "ProductId": 13,
+  "IsComplete": false,
+  "QuestionnaireTypeId": 0
+}
+end note
+activate dfs
+dfs --> ms: response risk profile questions
+note left
+{
+  "Questionnaire": {
+    "Id": 0,
+    "Name": "string",
+    "Description": "string",
+    "ContactTypeId": 0,
+    "ContactTypeName": "string",
+    "ProductId": 0,
+    "QuestionnaireTypeId": 0,
+    "Groups": [
+      {
+        "Id": 0,
+        "Name": "string",
+        "Key": "string",
+        "Title": "string",
+        "Description": "string",
+        "Steps": [
+          {
+            "Id": 0,
+            "Name": "string",
+            "Title": "string",
+            "Description": "string",
+            "Questions": [
+              {
+                "Id": 0,
+                "Type": "string",
+                "Layout": "string",
+                "Formatter": "string",
+                "MinimumNumberOfAnswers": 0,
+                "MaximumNumberOfAnswers": 0,
+                "RangeStep": 0,
+                "MinimumRange": 0,
+                "MaximumRange": 0,
+                "ValidationRule": "string",
+                "Text": "string",
+                "Title": "string",
+                "TextInputMask": "string",
+                "TextLength": 0,
+                "Image": "string",
+                "Order": 0,
+                "Answers": [
+                  {
+                    "Id": 0,
+                    "Text": "string",
+                    "Description": "string",
+                    "Header": "string",
+                    "Image": "string",
+                    "Order": 0,
+                    "FollowupStep": "string"
+                  }
+                ],
+                "Value": {
+                  "Ids": [
+                    0
+                  ],
+                  "Value": "string"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "RiskCategory": {
+    "Id": 0,
+    "Name": "string",
+    "Min": 0,
+    "Max": 0,
+    "ExpectedReturn": 0,
+    "Color": "string"
+  },
+  "IsComplete": true,
+  "CreatedDate": "2022-08-31T08:40:17.110Z",
+  "ExpiryDate": "2022-08-31T08:40:17.110Z"
+}
+end note
+deactivate dfs
+ms -> ms: map answers to question id from DFS
+ms -> dfs: POST /v1.0/contacts/{contactId}/questionnaires
+activate dfs
+note right
+{
+  "Id": 0,
+  "Name": "string",
+  "Description": "string",
+  "ContactTypeId": 0,
+  "ContactTypeName": "string",
+  "ProductId": 0,
+  "QuestionnaireTypeId": 0,
+  "Groups": [
+    {
+      "Id": 0,
+      "Name": "string",
+      "Key": "string",
+      "Title": "string",
+      "Description": "string",
+      "Steps": [
+        {
+          "Id": 0,
+          "Name": "string",
+          "Title": "string",
+          "Description": "string",
+          "Questions": [
+            {
+              "Id": 0,
+              "Type": "string",
+              "Layout": "string",
+              "Formatter": "string",
+              "MinimumNumberOfAnswers": 0,
+              "MaximumNumberOfAnswers": 0,
+              "RangeStep": 0,
+              "MinimumRange": 0,
+              "MaximumRange": 0,
+              "ValidationRule": "string",
+              "Text": "string",
+              "Title": "string",
+              "TextInputMask": "string",
+              "TextLength": 0,
+              "Image": "string",
+              "Order": 0,
+              "Answers": [
+                {
+                  "Id": 0,
+                  "Text": "string",
+                  "Description": "string",
+                  "Header": "string",
+                  "Image": "string",
+                  "Order": 0,
+                  "FollowupStep": "string"
+                }
+              ],
+              "Value": {
+                "Ids": [
+                  0
+                ],
+                "Value": "string"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+end note
+dfs --> ms: return risk profile saved
+ms -> dfs: GET /v1.0/contacts/{contactId}/calculaterisk
+dfs --> ms: return risk profile level
+ms -> dfs: POST /v1.1/contacts/{contactId}/questionnaires/search
+dfs --> ms: return risk profile result detail
+deactivate dfs
+ms -> db: Save to riskProfiles
+note right
+cif: String <- CIF
+result: String <- RiskProfileName
+category: Int <- RiskProfileID
+validUntil: ISODate <- RiskProfileExpDt
+answers: Array[<{questionNumber: Int, answer: String}>]
+modifiedAt: ISODate
+end note
+ms --> gql: return risk profile result
+deactivate ms
+gql --> app: return risk profile result
+deactivate gql
+deactivate app
+@enduml
