@@ -1,0 +1,153 @@
+@startuml risk profiles
+participant "Apps" as app
+participant "ms-gql" as gql
+participant "ms-investment" as ms
+collections "DB Investment" as db
+collections "redis-investment" as redis
+participant "ms-investment-auth" as auth
+participant "Additiv\nDFS" as dfs
+
+activate app
+app -> gql: mutation createPortfolio
+note right
+createPortfolio(input: CreatePortfolioInput!) {
+  goalCode: String!
+  name: String!
+  image: String
+  products: [Product]
+}
+input CreatePortfolioInput {
+  name: String! @constraint(minLength: 1, maxLength: 30)
+  image: String
+}
+end note
+activate gql
+gql -> ms: POST /portfolios
+activate ms
+ms -> auth: GET /auth
+activate auth
+auth --> ms: return contactId and accessToken
+deactivate auth
+ms -> ms: get productId,branchId,currencyId from ENV
+ms -> ms: generate goalCode
+ms -> dfs: GET /v2.0/contacts/{ContactId}/contactgroups
+activate dfs
+dfs --> ms: return contactGroupId
+note left
+{
+  "groups": [
+    {
+      "groupId": 532645,
+      "groupName": "Default"
+    }
+  ]
+}
+end note
+deactivate dfs
+ms -> dfs: POST /v1.0/contacts/{ContactId}/accounts/create?language=en
+note right
+{
+  "AccountNumber": CIF + GoalCode + ReferenceNo,
+  "Name": Portfolio Name,
+  "BranchId": {branchId},
+  "CurrencyId": currencyId, // 34 for IDR
+  "ContactGroupId": {contactGroupId},
+  "AccountType": 2,
+  "Balance": 0,
+  "IsActive": true,
+  "Product": {productId},
+  "Status": 1
+}
+end note
+activate dfs
+dfs --> ms: return accountId
+note left
+{
+  "ContactId": 542328,
+  "Account": {
+    "Id": 9100,
+    "UId": "UUID",
+    "AccountNumber": "74968559",
+    "Name": "Marguerite Abbott",
+    "Balance": 0.0,
+    "BranchId": 1,
+    "Currency": {...},
+    "ContactGroupId": 532645,
+    "Type": {...},
+    "IsActive": true,
+    "Product": {...},
+    "Status": {...},
+    "SubAccounts": []
+  }
+}
+end note
+deactivate dfs
+ms -> ms: call getRiskProfile service
+ms -> db: query riskProfiles by cif
+activate db
+db --> ms: return risk profile category
+deactivate db
+ms -> dfs: GET /v1.0/products/{productId}/model-portfolios?riskCategoryId={RiskCategoryId}&language=en
+activate dfs
+dfs --> ms: return modelPortfolioId
+note left
+[
+  {
+    "Id": 39,
+    "UId": "1c2e7e17-51d6-42f0-b3dc-8411b1d3f5fa",
+    "Name": "Jenius MF - Konservatif",
+    "IsActive": true,
+    "RiskCategory": {
+        "Id": 1,
+        "Name": "Conservative",
+        "Min": 0.03,
+        "Max": 0.05,
+        "ExpectedReturn": 0.03
+    }
+  }
+]
+end note
+deactivate dfs
+ms -> dfs: POST /v1.1/contacts/{ContactId}/portfolios?language=en&contactGroupId={{contactGroupId}}
+activate dfs
+note right
+{
+  "Name": Portfolio Name,
+  "ExternalId": CIF + GoalCode + ReferenceNo,
+  "ModelPortfolioId" : {modelPortfolioId},
+  "ProductId": {productId},
+  "CurrencyId": {currencyId},
+  "PortfolioType": "Real",
+  "RiskCategoryId": {riskCategoryId},
+  "RebalancingType": "Manual",
+  "PortfolioStatus": "NotImplemented",
+  "Accounts": [
+   {
+    "Account": {
+     "Id": {accountId},
+     "BranchId": branchId,
+     "ContactGroupId": contactGroupId,
+     "IsActive": true
+    },
+    "IsDefaultCustodyAccount": true,
+    "IsPayoutAccount": false,
+    "IsPayinAccount": false
+   }
+  ]
+}
+end note
+dfs --> ms: return portfolioId
+note left
+{
+  "Id": 3044
+}
+end note
+deactivate dfs
+ms -> db: insert portfolio\n{goalCode,name,portfolioId,image}
+ms -> redis: insert portfolio to redis
+ms --> gql: return created portfolio
+deactivate ms
+gql --> app: return created portfolio
+deactivate gql
+deactivate app
+@enduml
