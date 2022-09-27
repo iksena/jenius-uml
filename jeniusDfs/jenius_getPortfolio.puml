@@ -1,0 +1,79 @@
+@startuml get portfolios
+participant "Apps" as app
+participant "ms-gql" as gql
+participant "ms-investment" as ms
+collections "DB Investment" as db
+collections "redis-investment" as redis
+participant "ms-investment-auth" as auth
+participant "Additiv\nDFS" as dfs
+
+activate app
+app -> gql: query portfolio
+note right
+mutualFunds {
+  portfolios {
+    goalCode: String!
+    name: String!
+    products {
+      id: String
+      productCode: String!
+      productName: String
+      status: String
+      amount: Float
+      unrealizedGainLoss: Float
+      uglPercentage: Float
+      purchasePrice: Float
+      navPerUnit: Float
+      navDate: String
+      unit: Float
+      currency: String
+      imageUri: String
+      assetClass: String
+      display: Boolean
+    }
+  }
+}
+end note
+activate gql
+gql -> ms: GET /portfolios
+activate ms
+
+opt if exist in redis
+ms -> redis: query by cif
+activate redis
+redis --> ms: return portfolios
+deactivate redis
+ms --> gql: return portfolios
+end
+
+ms -> db: query by cif
+activate db
+db --> ms: return portfolios
+deactivate db
+
+ms -> auth: GET /auth
+activate auth
+auth --> ms: return contactId and accessToken
+deactivate auth
+ms -> dfs: GET /v1.0/contacts/{ContactId}/portfolios?language=en
+activate dfs
+dfs --> ms: return portfolios
+deactivate dfs
+
+loop iterate list of portfolioId
+ms -> dfs: GET /v1.0/contacts/{ContactId}/portfolios/{portfolioId}?language=en
+activate dfs
+dfs --> ms: return portfolio detail
+deactivate dfs
+end
+
+ms -> ms: map portfolios and positions
+ms -> db: upsert portfolioId
+ms -> redis: insert portfolios
+
+ms --> gql: return portfolios
+deactivate ms
+gql --> app: return portfolios
+deactivate gql
+deactivate app
+@enduml
