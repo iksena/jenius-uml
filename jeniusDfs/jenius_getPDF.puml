@@ -1,0 +1,10 @@
+@startuml edit portfolios
+participant "Apps" as app
+participant "API Gateway" as gql
+participant "ms-file-upload" as ms
+participant "Additiv\nDFS" as dfs
+
+activate app
+
+deactivate app
+@enduml

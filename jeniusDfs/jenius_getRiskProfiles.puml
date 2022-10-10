@@ -1,9 +1,10 @@
-@startuml risk profiles
+@startuml get risk profiles
 participant "Apps" as app
 participant "ms-gql" as gql
 participant "ms-investment" as ms
 participant "ms-investment-auth" as auth
 collections "DB Investment" as db
+participant "Common Service" as cs
 participant "Additiv\nDFS" as dfs
 
 activate app
@@ -24,43 +25,39 @@ activate db
 db --> ms: return risk profile
 deactivate db
 opt if db not exists
+ms -> cs: POST /v01/customers/searchWithAccount
+note right
+{
+    "filters": [
+        {
+            "key": "cif", 
+            "value": "1AG8DC"
+        }
+    ]
+}
+end note
+activate cs
+cs --> ms: return CRN
 ms -> dfs: GET /btpnCustomServiceLayer/v1/contacts/{CRN}/investment-account/status
 activate dfs
 dfs --> ms: return risk and account
 note right
 {
   "MutualFundInvestmentAccountStatus": "Unregistered",
-  "ChosenRiskCategoryId": 0
+  "ChosenRiskCategoryId": 0,
+  "RiskCategoryExpiryDate": ISODate
 }
 end note
 deactivate dfs
-opt if ChosenRiskCategoryId: 1-5
-ms -> auth: GET /tokens
-activate auth
-auth --> ms: return token and contactId
-deactivate auth
-ms -> dfs: POST /v1.1/contacts/{contactId}/questionnaires/search
-note right
-{
-  "Language": "string",
-  "ProductId": 13,
-  "IsComplete": true,
-  "QuestionnaireTypeId": 0
-}
-end note
-activate dfs
-dfs --> ms: response risk profile result and validUntil
-deactivate dfs
-end
 ms -> db: Save to riskProfiles
 note right
 cif: String <- CIF
-result: String <- RiskProfileName
-category: Int <- RiskProfileID
-validUntil: ISODate <- RiskProfileExpDt
-answers: Array[<{questionNumber: Int, answer: String}>]
+crn: String <- CRN
+result: String <- name of ChosenRiskCategoryId
+category: Int <- ChosenRiskCategoryId
+validUntil: ISODate <- RiskCategoryExpiryDate
 modifiedAt: ISODate
-expiredAt: ISODate, TTL: 24hours (parameterized in ENV)
+expiredAt: ISODate, TTL: 24 hours (parameterized in ENV)
 end note
 end
 ms --> gql: return risk profile result

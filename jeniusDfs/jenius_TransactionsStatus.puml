@@ -1,0 +1,96 @@
+@startuml transactions
+participant "Additiv\nDFS" as dfs
+queue "BTPN\nKafka" as kafka
+participant "worker-investment-transaction" as ms
+collections "DB Investment\nTransaction" as db
+participant "ms-investment" as mi
+
+activate dfs
+dfs -> kafka: publish status VERIFIED transaction\nID.DFS.INVESTMENT.TRANSACTION.STATUS
+note left
+{
+  "FailReason": "EQ",
+  "Status": "Verified",
+  "Channel": "Jenius",
+  "CIF": "2458O7",
+  "ReferenceNumber": "XXXX1XX1",
+  "ProductIsin": "IDG000015108",
+  "PortfolioId": 1374
+  "ProductCurrency": "IDR",
+  "TransactionCategory": "Subscription",
+  "TransactionDate": "2022-07-13T10:39:35",
+  "SettlementDate": "2022-07-13T10:39:35",
+  "NAVDate": "2022-07-13T10:39:35",
+  "Units": 1.56,
+  "InvestmentAmount": 100500,
+  "FeeAmount": 0,
+  "TaxAmount": 0.7,
+  "TransactionId": 1274,
+}
+end note
+activate kafka
+kafka --> ms: consume VERIFIED status
+deactivate kafka
+activate ms
+ms -> mi: GET /portfolios?portfolioId=
+activate mi
+mi --> ms: return portfolio, goalCode
+ms -> mi: GET /products?productIsin=
+mi --> ms: return product, productCode
+deactivate mi
+ms -> db: Update database\ninflightTransaction
+note right
+cif: String
+status: Status <- from kafka
+type: TransactionCategory <- from kafka
+amount: InvestmentAmount <- from kafka
+fee: FeeAmount <- from kafka
+tax: TaxAmount <- from kafka
+units: Units <- from kafka
+referenceNo: ReferenceNumber <- from kafka,
+navDate: NAVDate <- from kafka
+createdAt: TransactionDate <- from kafka
+modifiedAt: SettlementDate <- from kafka
+currency: ProductCurrency <- from kafka
+portfolioId: PortfolioId <- from kafka
+productIsin: ProductIsin <- from kafka
+navPerUnit: Number
+productCode: String
+goalCode: String
+productName: String
+productGLAccount: Number
+imageUri: String
+assetClass: Number
+source: Number
+end note
+ms -> mi: DELETE /admin/portfolios-cache/:cif
+deactivate ms
+
+dfs -> dfs: PTWS receive transaction report from KSEI
+dfs -> kafka: publish status SETTLED transaction\nwith calculated units\nto ID.DFS.INVESTMENT.TRANSACTION.STATUS
+activate kafka
+kafka --> ms: consume SETTLED status
+deactivate kafka
+activate ms
+ms -> mi: GET /portfolios?portfolioId=
+ms -> mi: GET /products?productIsin=
+ms -> db: Update database\ninflightTransaction
+ms -> mi: DELETE /admin/portfolios-cache/:cif
+deactivate ms
+
+opt If transaction failed
+dfs -> kafka: publish status FAILED transaction\nto ID.JENIUS.INVESTMENT.TRANSACTION.STATUS
+activate kafka
+kafka --> ms: consume FAILED status
+deactivate kafka
+activate ms
+ms -> mi: GET /portfolios?portfolioId=
+ms -> mi: GET /products?productIsin=
+ms -> db: Update database\ninflightTransaction
+ms -> mi: DELETE /admin/portfolios-cache/:cif
+deactivate ms
+end opt
+
+deactivate dfs
+
+@enduml

@@ -1,0 +1,49 @@
+@startuml edit portfolios
+participant "Apps" as app
+participant "ms-gql" as gql
+participant "ms-investment" as ms
+collections "DB Investment" as db
+participant "ms-investment-auth" as auth
+participant "Additiv\nDFS" as dfs
+
+activate app
+app -> gql: mutation editPortfolio
+note right
+editPortfolio(input: EditPortfolioInput!) {
+  name: String!
+  goalCode: String!
+  createdAt: String!
+  modifiedAt: String!
+}
+input EditPortfolioInput {
+  goalCode: String!
+  name: String
+  image: String
+}
+end note
+activate gql
+gql -> ms: PATCH /portfolios/:goalCode
+activate ms
+ms -> db: findOneAndUpdate\nportfolios by goalCode
+activate db
+db --> ms: return portfolioId
+deactivate db
+ms -> auth: GET /tokens
+activate auth
+auth --> ms: return SSOToken and contactId
+deactivate auth
+ms -> dfs: PATCH /v1.0/contacts/{ContactId}/portfolios/{portfolioId}
+note left
+{
+  "Name": {
+    "DoUpdate": true,
+    "Value": "{portfolioName}"
+  }
+}
+end note
+ms -> gql: return edited portfolio
+deactivate ms
+gql --> app: return edited portfolio
+deactivate gql
+deactivate app
+@enduml

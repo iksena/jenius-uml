@@ -1,0 +1,93 @@
+@startuml transactions
+participant "Apps" as app
+participant "ms-gql" as gql
+participant "ms-investment-transaction" as ms
+collections "DB Investment\nTransaction" as db
+queue "BTPN\nKafka" as kafka
+participant "Additiv\nDFS" as dfs
+
+activate app
+app -> gql: GraphQL query\ncreateInvestmentTransaction
+note right
+createInvestmentTransaction(input: CreateInvestmentTransactionInput!) {
+  status: String
+  subAccount: String
+  referenceNo: String
+  productCode: String
+  productName: String
+  assetClass: String
+  imageUri: String
+  type: String
+  units: Float
+  amount: Float
+  fee: Float
+  tax: Float
+  currency: String
+  createdAt: String
+  modifiedAt: String
+}
+input CreateInvestmentTransactionInput {
+  forecastChecksum: String!
+}
+end note
+
+activate gql
+gql -> ms: POST /transactions
+activate ms
+ms -> db: query forecast by checksum
+ms -> kafka: Publish to Kafka\nID.DFS.INVESTMENT.TRANSACTION.REQUEST
+activate kafka
+note left
+{
+  "CIF": "011AIR98", 
+  "PortfolioId": 12, 
+  "TransactionDate": "2022-07-20 00:00:00.0000000", 
+  "CashAccountNumber": "00193000061", 
+  "ReferenceNumber": "XXXX1XX1" 
+  "Transactions": [{
+    "ProductIsin": "IDG000015108",
+    "ProductCurrency": "IDR",
+    "TransactionCategory": "Subscription",
+    "InvestmentAmount": 0,
+    "Units": 100,
+    "IsRedeemAll": true
+  }],
+}
+end note
+kafka --> dfs: consume transaction
+deactivate kafka
+ms -> db: Save to database\ninflightTransaction
+note left
+{
+  "cif": "1AAAR8",
+  "type": "SUB",
+  "currency": "IDR",
+  "navPerUnit": 0,
+  "productCode": "ADPUNM",
+  "amount": 200000,
+  "fee": 2703,
+  "tax": 297,
+  "subAccount": "",
+  "productGLAccount": "05373001734",
+  "goalCode": "001",
+  "productName": "RD Ashmore Dana Pasar Uang Nusantara ",
+  "imageUri": "assets/imagesTest.jpg",
+  "assetClass": "3",
+  "source": "90120002646",
+  "referenceNo": "NIH8418RAAA1",
+  "createdAt": "2022-07-20T10:35:36.839Z",
+  "modifiedAt": "2022-07-20T10:39:25.912Z",
+  "status": "PENDING",
+  "hasSentKafkaTransactionRequest": true,
+  "productIsin": "",
+  "portfolioId": ""
+}
+end note
+ms --> gql: response transaction accepted
+deactivate ms
+gql --> app: response transaction accepted
+deactivate gql
+deactivate app
+
+
+@enduml
