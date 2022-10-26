@@ -1,0 +1,129 @@
+@startuml get risk profiles detail
+participant "Apps" as app
+participant "ms-gql" as gql
+participant "ms-investment" as ms
+collections "redis-investment" as redis
+participant "ms-investment-auth" as auth
+participant "Additiv\nDFS" as dfs
+
+activate app
+note over app: **Get Risk Profile Detail**
+app -> gql: GraphQL query\nriskProfileDetail
+activate gql
+note right
+riskProfileDetail {
+  validUntil
+  category
+  recommendation {
+    percentage
+    productCategory
+  }
+}
+end note
+gql -> ms: GET /risk-profiles/detail
+activate ms
+ms -> ms: call getRiskProfile\nreturn category
+
+ms -> redis: get risk profile allocation\nkey: riskProfileRecommendations-{category}
+activate redis
+redis --> ms: return recommendations
+deactivate redis
+
+opt if cache not exist
+ms -> ms: get from ENV\n- productId\n- riskProfileRecommendationsExpiryHours
+ms -> auth: GET /tokens
+activate auth
+auth --> ms: return contactId and SSO token
+deactivate auth
+
+ms -> dfs: GET /v1.0/products/{productId}/model-portfolios?riskCategoryId={RiskCategoryId}&language=en
+activate dfs
+dfs --> ms: return modelPortfolioId
+note left
+[
+  {
+    "Id": 41,
+    "UId": "6138c3f0-293d-4aff-b19a-b9d9fd3ae45b",
+    "Name": "Konservatif Reccomandation",
+    "IsActive": true,
+    "RiskCategory": {
+      "Id": 1,
+      "Name": "Conservative",
+      "Min": 0.01,
+      "Max": 0.05,
+      "ExpectedReturn": 0.03
+    }
+  }
+]
+end note
+deactivate dfs
+
+ms -> dfs: GET /v3.0/model-portfolios/{modelPortfolioId}/optimizationconstraints?language=en
+activate dfs
+dfs --> ms: return optimizationconstraints
+note left
+{
+  "Id": 41,
+  "OptimizationConstraints": {
+    "Id": 526439,
+    "AssetClassConstraints": [
+      {
+        "AssetClass": {
+          "Id": 47,
+          "UId": "3fa8ce1a-3f45-4f64-895c-a717c45f3f23",
+          "Name": "Mutual Fund - Money Market"
+        },
+        "MinWeight": 0.5000000000,
+        "MaxWeight": 0.5000000000
+      },
+      {
+        "AssetClass": {
+          "Id": 48,
+          "UId": "4aae226e-2057-44be-9d6a-a663d6d76496",
+          "Name": "Mutual Fund - Fixed Income"
+        },
+        "MinWeight": 0.0000000000,
+        "MaxWeight": 0.5000000000
+      },
+      {
+        "AssetClass": {
+          "Id": 50,
+          "UId": "abf06fd5-abfa-4051-8c56-f0f22f106e9f",
+          "Name": "Bonds - Short Term"
+        },
+        "MinWeight": 0.0000000000,
+        "MaxWeight": 0.3500000000
+      },
+      {
+        "AssetClass": {
+          "Id": 51,
+          "UId": "bb96b74a-2207-45fc-8871-8253541f7b11",
+          "Name": "Bonds - Long Term"
+        },
+        "MinWeight": 0.0000000000,
+        "MaxWeight": 0.1500000000
+      }
+    ],
+    "CurrencyConstraints": [],
+    "SecuritySectorConstraints": [...],
+    "SecurityConstraints": [],
+    "SecurityTypeConstraints": [],
+    "ContinentConstraints": [],
+    "EconomicalZoneConstraints": [],
+    "CountryConstraints": []
+  }
+}
+end note
+deactivate dfs
+
+ms -> ms: map optimizationConstraints to riskProfileRecommendations
+ms -> redis: save riskProfileRecommendations
+end
+
+ms -> ms: map recommendations with risk profile result
+ms --> gql: return risk profile detail
+deactivate ms
+gql --> app: return risk profile detail
+deactivate gql
+deactivate app
+@enduml

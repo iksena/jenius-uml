@@ -84,34 +84,12 @@ ms -> db: query riskProfiles by cif
 activate db
 db --> ms: return risk profile category
 deactivate db
-ms -> dfs: GET /v1.0/products/{productId}/model-portfolios?riskCategoryId={RiskCategoryId}&language=en
-activate dfs
-dfs --> ms: return modelPortfolioId
-note left
-[
-  {
-    "Id": 39,
-    "UId": "1c2e7e17-51d6-42f0-b3dc-8411b1d3f5fa",
-    "Name": "Jenius MF - Konservatif",
-    "IsActive": true,
-    "RiskCategory": {
-        "Id": 1,
-        "Name": "Conservative",
-        "Min": 0.03,
-        "Max": 0.05,
-        "ExpectedReturn": 0.03
-    }
-  }
-]
-end note
-deactivate dfs
 ms -> dfs: POST /v1.1/contacts/{ContactId}/portfolios?language=en&contactGroupId={{contactGroupId}}
 activate dfs
 note right
 {
   "Name": Portfolio Name,
   "ExternalId": CIF + GoalCode + ReferenceNo,
-  "ModelPortfolioId" : {modelPortfolioId},
   "ProductId": {productId},
   "CurrencyId": {currencyId},
   "PortfolioType": "Real",

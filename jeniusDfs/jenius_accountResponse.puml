@@ -1,0 +1,66 @@
+@startuml open account response
+participant "Additiv\nDFS" as dfs
+queue "BTPN\nKafka" as kafka
+participant "worker-investment-account" as ms
+collections "DB Investment" as db
+
+activate dfs
+dfs -> kafka: Publish response customer registration\nID.DFS.INVESTMENT.OPEN_ACCOUNT.RESPONSE
+note left
+{
+  "CRN": "011AIR98",
+  "CIF": "1AIR98",
+  "RiskProfileStatusCode": 1,
+  "RiskProfileName": "Konservatif",
+  "RiskProfileExpiryDate": "2023-09-07T00:00:00",
+  "SID": "IDD2209XF037840",
+  "IFUA": "BTP691AIR98F0123",
+  "MutualFundInvestmentAccountStatusCode": "Success",
+  "MutualFundInvestmentAccountStatusFailReason": "reason received from S-Invest"
+}
+enum MutualFundInvestmentAccountStatusCode {
+  Success,
+  IdCardNotFound,
+  DobGenderNotMatch,
+  NameNotMatch,
+  NpwpNotFound,
+  NpwpInvalid,
+  SidDuplicated,
+  SidAlreadyRegistered,
+  Other
+}
+end note
+deactivate dfs
+activate kafka
+kafka --> ms: consume registration status
+deactivate kafka
+activate ms
+ms -> db: Update accounts collection
+note right
+{
+  crn: String <- CRN
+  cif: String <- CIF
+  status: REGISTERED/VERIFYING/UNREGISTERED/FAILED
+  sid: String <- SID
+  ifua: String <- IFUA
+  sidMfStatus: String <- MutualFundInvestmentAccountStatusCode
+  failDescription: String <- MutualFundInvestmentAccountStatusFailReason
+  failType: 1-9 <- map from MutualFundInvestmentAccountStatusCode
+  modifiedAt: ISODate
+}
+**FailType** 
+error from KSEI:
+1: Date of Birth or Gender not Match
+2: Duplicate SID Possibility
+3: Error due to duplicated SID received from SID Generator
+4: NIK Not Found in Dukcapil Online
+error from profile data:
+5: Foreigner with invalid ID
+6: Default
+7: Foreigner is US citizen
+8: Fail mapping customer data in WMS
+9: Customer Nationality is ID and idType is not KTP
+end note
+deactivate ms
+
+@enduml

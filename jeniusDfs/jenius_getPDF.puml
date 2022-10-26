@@ -1,10 +1,28 @@
-@startuml edit portfolios
+@startuml download pdf
 participant "Apps" as app
-participant "API Gateway" as gql
+participant "API Gateway" as apigw
 participant "ms-file-upload" as ms
 participant "Additiv\nDFS" as dfs
 
 activate app
-
+app -> apigw: GET /j2fileupload/file/pdf/{filename}
+activate apigw
+apigw -> ms: GET /file/pdf/{filename}
+activate ms
+ms -> ms: split filename
+note right
+filename: /dfs/377
+source = dfs
+documentId = 377
+end note
+ms -> dfs: GET /btpnCustomServiceLayer/v1/documents/377
+activate dfs
+dfs --> ms: return pdf
+deactivate dfs
+ms -> ms: add response header
+ms --> apigw: return pdf response
+deactivate ms
+apigw --> app: return pdf response
+deactivate apigw
 deactivate app
 @enduml
