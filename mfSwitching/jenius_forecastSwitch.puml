@@ -1,0 +1,127 @@
+@startuml forecast switching
+participant "Apps" as app
+participant "ms-gql" as gql
+participant "ms-investment-transaction" as ms
+collections "DB\nInvestment Transaction" as db
+participant "ms-investment" as msInvestment
+participant "ms-investment-auth" as auth
+participant "Additiv\nDFS" as dfs
+collections "DB\nInvestment Transaction" as db
+
+activate app
+app -> gql: mutation forecasts
+note right
+forecastInvestmentTransaction(input: ForecastInvestmentTransactionInput!) {
+  checksum: String
+  productIsin: String
+  switchInProductIsin: String
+  units: Float
+  amount: Float
+  fee: Float
+  tax: Float
+  currency: String
+}
+input ForecastInvestmentTransactionInput {
+  currency: String!
+  goalCode: String!
+  productIsin: String!
+  switchInProductIsin: String
+  type: String! (switching type: SWT)
+  units: Float
+  portfolioId: String
+  isSwitchAll: Boolean
+}
+end note
+activate gql
+
+gql -> ms: POST /forecasts
+activate ms
+ms -> msInvestment: GET /portfolios/{goalCode}
+activate msInvestment
+msInvestment --> ms: return portfolio details
+ms -> msInvestment: GET /products/{productIsin}
+ms -> msInvestment: GET /products/{switchInProductIsin}
+msInvestment --> ms: return product details
+deactivate msInvestment
+ms -> auth: GET /auth
+activate auth
+auth --> ms: return contactId and accessToken
+deactivate auth
+ms -> dfs: POST /btpnCustomServiceLayer/v1/contacts/{contactId}/portfolios/{portfolioId}/switching-transaction/validate
+note right
+{
+  Transactions: [{
+    ProductIsin: String,
+    SwitchInProductIsin: String,
+    ProductCurrency: IDR,
+    IsSwitchAll: Boolean,
+    Units: Number
+  }]
+}
+end note
+activate dfs
+dfs --> ms: return forecast response
+note left
+{
+  "Status": "Success", //Type = Enum(Status see below)
+  "Result": {
+    "CIF": "", //Type = string
+    "PortfolioId": 234, //Type = number
+    "Transactions": [{
+      "FeeValue": 0.5, //Type = Number
+      "FeeAmount": 3456456.5567, //Type = Number
+      "InvestmentAmount": "", //Type = Number
+      "TaxAmount": "", //Type = Number
+      "SwitchOutProductIsin": "IDG000015108", //Type = string
+      "SwitchInProductIsin": "IDG000015109", //Type = string
+      "ProductCurrency": "IDR", //Type = string
+    }]
+  }
+}
+enum Status {
+  Success,
+  InvalidCif,
+  InsufficientMinimumSwitchOutUnits,
+  InsufficientMinimumRemainingUnitsAfterSwitch,
+  InsufficientMinimumSwitchInAmount,
+  NonInvestableInstrument,
+  SwitchNotAllowed,
+  InvalidProductCurrency
+}
+end note
+deactivate dfs
+ms -> ms: map forecast and generate RefNo
+ms -> db: insert forecast
+note right
+_id: "6bcas2314" (returned as checksum)
+cif: '2275PC',
+type: 'SWT',
+currency: 'IDR',
+navPerUnit: 1234.2311,
+navDate: '2022-12-05T00:00:00Z'
+productCode: 'ASDQWE',
+productIsin: 'IDRASDQWE001',
+productName: 'Obligasi Mandiri',
+imageUri: 'schrod.png',
+switchInProductCode: 'ASDQWW',
+switchInProductIsin: 'IDRASDQWE002',
+switchInProductName: 'Ekuitas Mandiri',
+amount: 1000000,
+fee: 20000,
+tax: 2000,
+goalCode: '001',
+portfolioId: '123',
+portfolioName: 'General Investment'
+referenceNo: '4CLD83CP5722',
+assetClass: '1',
+createdAt: '2022-12-05T00:00:00Z'
+modifiedAt: '2022-12-05T00:00:00Z'
+expiredAt: ISODate (TTL: Now+10minutes)
+end note
+ms --> gql: return checksum and forecast data
+
+deactivate ms
+gql --> app: return forecast
+deactivate gql
+deactivate app
+@enduml

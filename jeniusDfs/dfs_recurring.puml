@@ -1,0 +1,139 @@
+@startuml mutual funds cron recurring
+
+participant "cron-recurring" as cron
+participant "ms-eod-status" as eod
+collections "instructions" as instr
+queue "ID.JENIUS.RECURRING.INSTRUCTIONS.MUTUAL_FUNDS" as kafkaRec
+queue "j2notify" as kafkaNotif
+participant "worker-recurring-investment" as wri
+participant "ms-investment" as mi
+participant "ms-investment-transaction" as mit
+collections "productInstructions" as prodIns
+collections "inflightTransactions" as inflights
+queue "ID.DFS.INVESTMENT.TRANSACTION.REQUEST" as kafkaTrx
+queue "ID.DFS.INVESTMENT.TRANSACTION.STATUS" as kafkaTrxRes
+participant "worker-investment-transaction" as wit
+queue "ID.JENIUS.RECURRING.RESPONSE" as kafkaRecRes
+participant "worker-recurring-response" as wrr
+
+activate cron
+cron -> cron: run every day\n at 6am, 9am, and 12pm
+cron -> eod: GET /eq/eod-status
+alt isNightMode=true
+cron -> cron: end process
+end
+cron -> instr: query executeDate=today\nstatus=ACTIVE\nisProcessing=false\nprocessingCode=MUTUAL_FUNDS_SUB
+cron -> cron: map instructions to messages
+cron -> cron: shouldUpdateStatus = if last tick in a day
+cron -> kafkaRec: bulk publish instruction messages
+note right
+{
+    cif: String
+    recurringId: String
+    processingCode: MUTUAL_FUNDS_SUB
+    frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+    endCondition: DATE/OCCURENCE/NONE
+    startDate: Date
+    endDate?: Date
+    targetOccurrence?: Number
+    occurrence: Number
+    shouldUpdateStatus: Boolean
+}
+end note
+activate kafkaRec
+opt if publish FAILED
+cron -> cron: delay for 5s and retry 3 times
+end
+opt if still failed and shouldUpdateStatus=true
+cron -> instr: update status to PAUSED and append histories {status, executedAt}
+cron -> kafkaNotif: send notification
+end
+deactivate cron
+kafkaRec -> wri: consume MF sub request
+deactivate kafkaRec
+activate wri
+wri -> instr: update isProcessing=true
+wri -> mi: GET /admin/risk-profiles
+activate mi
+mi --> wri: Risk profile with expiry date
+deactivate mi
+opt if risk profile expired
+wri -> instr: update isProcessing=false
+opt if shouldUpdateStatus=true
+wri -> instr: update status to PAUSED and \nappend histories {status: RISK_PROFILE_EXPIRED, executedAt}
+wri -> kafkaNotif: send notification
+end
+end
+wri -> mit: POST /admin/recurring-transactions
+activate mit
+mit -> prodIns: query by recurringId
+mit -> inflights: map data and insert inflight
+note right
+{ 
+    source: String
+    cif: String
+    productCode: String
+    productName: String
+    productGLAccount: String
+    goalCode: String
+    currency: String
+    amount: Number
+    fee: Number
+    tax: Number
+    instruction: {
+        recurringId: String
+        frequency: ONCE/DAILY/DAILY_WEEKDAYS/WEEKLY/MONTHLY
+        endCondition: DATE/OCCURENCE/NONE
+        startDate: Date
+        endDate?: Date
+        targetOccurrence?: Number
+        occurence: Number
+        shouldUpdateStatus: Boolean
+    }
+    createdAt: Date
+    modifiedAt: Date
+}
+end note
+mit -> kafkaTrx: proceed transaction to DFS
+mit --> wri: response accepted/failed
+deactivate mit
+opt if failed
+wri -> instr: update isProcessing=false
+opt if shouldUpdateStatus=true
+wri -> instr: update status to PAUSED and \nappend histories {status:SYSTEM_ERROR, executedAt}
+wri -> kafkaNotif: send notification
+end
+end
+deactivate wri
+kafkaTrxRes -> wit: Consume transaction status
+
+activate wit
+wit -> wit: calculate next executeDate
+alt if nextStatus=COMPLETED (instruction completed)
+wit -> prodIns: add expiredAt
+end
+wit -> kafkaRecRes: Publish recurring response
+note right 
+{
+    cif: String
+    recurringId: String
+    executedAt: Date
+    status: SUCCESS/FAILED/INSUFFICIENT_BALANCE
+    nextExecuteDate: Date
+    nextStatus: ACTIVE/PAUSED/COMPLETED
+}
+end note
+deactivate wit
+
+activate kafkaRecRes
+kafkaRecRes -> wrr: Consume recurring response
+deactivate kafkaRecRes
+activate wrr
+wrr -> instr: Update status, executeDate, occurence, isProcessing=false\nappend histories: [{executedAt, status: SUCCESS}]
+opt if executeDate=null (instruction completed)
+wrr -> instr: Add expiredAt
+wrr -> kafkaNotif: send notification completed
+end
+deactivate wrr
+
+@enduml

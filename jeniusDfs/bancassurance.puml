@@ -1,6 +1,7 @@
 @startuml bancassurance
 participant "Apps" as app
-participant "BTPN\nJenius Microservices" as ms
+participant "ms-portfolio" as ms
+participant "ms-forex" as forex
 participant "Additiv\nDFS" as dfs
 
 activate app
@@ -22,62 +23,51 @@ assets {
 }
 end note
 activate ms
-ms -> dfs: GET /InquiryCustomerPortfolio?category=BA
+
+ms -> forex: GET /foreign-exchanges/rates
+activate forex
+forex --> ms: return forex rates
+deactivate forex
+
+ms -> dfs: GET /btpnCustomServiceLayer/v1/contacts/{contactId}/portfolio-bancassurance
 activate dfs
 dfs --> ms: return bancassurance data
 note right
 {
-  "totalRecord": 2,
-  "listInformation": [
+  "Id": 2426,
+  "UId": "51ec77d3-db86-4796-a7d1-267f7326c897",
+  "ExternalId": "BAN_21984W",
+  "Name": "BAN_21984W",
+  "Positions": [
     {
-      "polisNumber": "000066248956",
-      "accountNumber": "BTP693584ZUF0168",
-      "accountOpenDate": "2018-07-19",
-      "accountName": "AZMI GHALIB AUSTIN",
-      "sourceSystemCode": "WMS",
-      "navDate": "2021-07-02",
-      "crn": "013584ZU",
-      "cif": "3584ZU",
-      "productCode": "BASE_GWL",
-      "productName": "GUARDIA WEALTHLINK",
-      "originalCcyCode": "USD",
-      "originalCcyDesc": "US Dollar",
-      "fundCode": "AP",
-      "fundName": "SMARTWEALTH DOLLAR ASIA PACIFIC FUND",
-      "partnerCode": "ALZ",
-      "partnerName": "PT ASURANSI ALLIANZ LIFE INDONESIA",
-      "branchCode": "0330",
-      "branchName": null,
-      "polisIndikator": "INFORCE",
-      "totalUnitCount": 2353.3558,
-      "navPerUnitAmount": 1.6676,
-      "balanceAmount": 3924.4561,
-      "createdDate": "2021-07-06"
-    },
-    {
-      "polisNumber": "000067419244",
-      "accountNumber": "BTP693584ZUF0168",
-      "accountOpenDate": "2018-07-19",
-      "accountName": "AZMI GHALIB AUSTIN",
-      "sourceSystemCode": "WMS",
-      "navDate": "2022-04-11",
-      "crn": "013584ZU",
-      "cif": "3584ZU",
-      "productCode": "BASE_GWL",
-      "productName": "GUARDIA WEALTHLINK",
-      "originalCcyCode": "IDR",
-      "originalCcyDesc": "Rupiah",
-      "fundCode": "MF",
-      "fundName": "SMARTLINK RUPIAH MONEY MARKET FUND",
-      "partnerCode": "ALZ",
-      "partnerName": "PT ASURANSI ALLIANZ LIFE INDONESIA",
-      "branchCode": "0330",
-      "branchName": null,
-      "polisIndikator": "INFORCE",
-      "totalUnitCount": 2586.283,
-      "navPerUnitAmount": 3287.18,
-      "balanceAmount": 8501577.7519,
-      "createdDate": "2022-04-13"
+      "Id": 19616,
+      "Security": {
+        "Id": 283,
+        "Name": "GUARDIA PREMIUM",
+        "Isin": "BASE_GUPR",
+        "Currency": {
+          "Id": 34,
+          "Name": "Indonesian Rupiah",
+          "CurrencyCode": "IDR",
+          "Symbol": "Rp"
+        }
+      },
+      "Quantity": 5823.364,
+      "InvestmentValuePortfolioCurrency": 22887509.3,
+      "InvestmentValueSecurityCurrency": 22887509.3,
+      "FundSecurity": {
+        "Id": 353,
+        "Name": "Smartlink Rupiah Balanced Fund",
+        "Isin": "BF",
+        "Currency": {
+          "Id": 34,
+          "Name": "Indonesian Rupiah",
+          "CurrencyCode": "IDR",
+          "Symbol": "Rp"
+        },
+        "ValuationDate": "2022-07-20T00:00:00",
+        "ValuationPrice": 3930.29
+      }
     }
   ]
 }

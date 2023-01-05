@@ -125,6 +125,7 @@ end note
 activate dfs
 dfs --> auth: return contactId
 deactivate dfs
+
 auth -> ids: POST /connect/token
 note right
 scope: DfsApi

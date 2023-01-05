@@ -1,0 +1,44 @@
+@startuml productReplacementList
+participant "App" as app
+participant "ms-gql" as gql
+participant "ms-investment" as ms
+collections "DB Investment" as db
+
+activate app
+app -> gql: query mutualFundsSwitchingProducts(productCode: String)
+note right
+query mutualFundsSwitchingProducts(productCode: String) {
+    minSwitchOutUnits: Number
+    minSwitchInAmount: Number
+    navPerUnit: Number
+    assetClass: Number
+    productName: String
+    imageUri: String
+    riskCategory: String
+    swtFee: Number
+    percent1Y: Number
+    allowSwitching: Boolean
+    display: Boolean
+    status: String
+    productCode: String
+    productIsin: String
+    currency: String
+    fundHouseCode: String
+    fundHouseName: String
+}
+end note
+
+activate gql
+gql -> ms: GET /active-products/:productCode/switching-replacements
+activate ms
+ms -> db: query productCode to activeProducts
+ms -> db: query activeProducts
+note left
+- by investmentManager
+- by currency
+end note
+ms --> gql: return product replacement list
+deactivate ms
+gql --> app: return product replacement list
+deactivate gql
+deactivate app

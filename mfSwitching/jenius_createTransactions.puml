@@ -1,0 +1,110 @@
+@startuml transactions switch
+participant "Apps" as app
+participant "ms-gql" as gql
+participant "ms-investment-transaction" as ms
+collections "DB Investment\nTransaction" as db
+queue "BTPN\nKafka" as kafka
+participant "Additiv\nDFS" as dfs
+
+activate app
+app -> gql: GraphQL query\ncreateInvestmentTransaction
+note right
+createInvestmentTransaction(input: CreateInvestmentTransactionInput!) {
+  status: String
+  referenceNo: String
+  productName: String
+  switchInProductName: String
+  assetClass: String
+  type: String
+  amount: Float
+  fee: Float
+  tax: Float
+  currency: String
+  createdAt: String
+  modifiedAt: String
+}
+input CreateInvestmentTransactionInput {
+  forecastChecksum: String!
+}
+end note
+
+activate gql
+gql -> ms: POST /transactions
+activate ms
+ms -> db: query forecast by checksum
+ms -> ms: generate referenceNo
+ms -> kafka: Publish to Kafka\nID.DFS.INVESTMENT.TRANSACTION.REQUEST
+activate kafka
+note left
+{
+  "CIF": "011AIR98", 
+  "PortfolioId": 12, <- from db
+  "TransactionDate": "2022-07-20 00:00:00.0000000", 
+  "ReferenceNumber": {referenceNo}
+  "Transactions": [{
+    "SwitchOutProductIsin": "IDG000019803", <- from db
+    "SwitchInProductIsin": "IDG000019804", <- from db
+    "ProductCurrency": "IDR",
+    "TransactionCategory": "Switching",
+    "IsSwitchAll": false,
+    "Units": 100.2
+  }]
+}
+end note
+kafka --> dfs: consume transaction
+deactivate kafka
+ms -> db: Save 2 documents\nto db inflightTransaction
+note left
+cif: '2275PC',
+status: 'PENDING'
+type: 'SWTOUT',
+currency: 'IDR',
+navPerUnit: 1234.2311,
+navDate: '2022-12-05T00:00:00Z'
+productCode: 'ASDQWE',
+productIsin: 'IDRASDQWE001',
+productName: 'Obligasi Mandiri',
+imageUri: 'schrod.png',
+amount: 1000000,
+fee: 20000,
+tax: 2000,
+goalCode: '001',
+portfolioId: '123',
+portfolioName: 'General Investment'
+referenceNo: referenceNo + SWTOUT,
+assetClass: '1',
+hasSentKafkaTransactionRequest: true,
+createdAt: '2022-12-05T00:00:00Z'
+modifiedAt: '2022-12-05T00:00:00Z'
+end note
+note right
+cif: '2275PC',
+status: 'PENDING'
+type: 'SWTIN',
+currency: 'IDR',
+navPerUnit: 1234.2311,
+navDate: '2022-12-05T00:00:00Z'
+productCode: 'ASDQWF',
+productIsin: 'IDRASDQWF001',
+productName: 'Ekuitas Mandiri',
+imageUri: 'schrod.png',
+amount: 1000000,
+fee: 20000,
+tax: 2000,
+goalCode: '001',
+portfolioId: '123',
+portfolioName: 'General Investment'
+referenceNo: referenceNo + SWTIN,
+assetClass: '1',
+hasSentKafkaTransactionRequest: true,
+createdAt: '2022-12-05T00:00:00Z'
+modifiedAt: '2022-12-05T00:00:00Z'
+end note
+ms --> gql: response transaction accepted
+deactivate ms
+gql --> app: response transaction accepted
+deactivate gql
+deactivate app
+
+
+@enduml
