@@ -1,0 +1,108 @@
+@startuml open account bonds
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+collections "DB Investment" as db
+queue "BTPN\nKafka" as kafka
+participant "Additiv\nDFS" as dfs
+participant "BK BCA\nS-Invest" as ksei
+
+activate app
+app -> ms: GraphQL mutation\nregisterBondsAccount
+note right
+registerBondsAccount(input: RegisterBondsAccount!)
+input RegisterBondsAccountInput {
+  education: String!
+  motherName: String
+  spouseName: String
+}
+end note
+activate ms
+ms -> ms: get and map profile, accounts, and risk profile data
+ms -> kafka: Publish customer data\nID.DFS.BONDS.ACCOUNT.REQUEST
+note right
+cif
+fullName
+nationality
+idCard
+passportNo
+passportExpiredDate
+placeOfBirth
+dateOfBirth
+phone
+email
+sex
+maritalStatus
+motherName
+spouseName
+education
+occupation
+professionIndustry
+income
+sourceOfIncome
+investmentObjective
+idCardAddress.address
+idCardAddress.city
+idCardAddress.zipcode
+malingAddress.address
+malingAddress.city
+malingAddress.zipcode
+bankAccounts[0].currency
+bankAccounts[0].accountNumber
+bankAccounts[0].beneficiaryName
+bankAccounts[0].bicCode
+bankAccounts[1].currency
+bankAccounts[1].accountNumber
+bankAccounts[1].beneficiaryName
+bankAccounts[1].bicCode
+bankAccounts[2].currency
+bankAccounts[2].accountNumber
+bankAccounts[2].beneficiaryName
+bankAccounts[2].bicCode
+end note
+activate kafka
+ms --> app: response request accepted
+deactivate ms
+deactivate app
+kafka --> dfs: consume register account
+deactivate kafka
+activate dfs
+dfs -> ksei: validate and send customer registration
+activate ksei
+ksei --> dfs: return SID 
+deactivate ksei
+dfs -> kafka: Publish response customer registration\nID.DFS.BONDS.ACCOUNT.RESPONSE
+note left
+{
+  "crn": "0000Y3",
+  "cif": "0000Y3",
+  "sid": "IDD1604K7688567",
+  "investorAccountNumber": "IDD1604K7688567",
+  "custodianBankCode": "ID1",
+  "bondsAccountStatusCode": "Success",
+  "bondsAccountStatusFailReason": "reason received from BK BCA",
+}
+bondsAccountStatusFailReason error from KSEI:
+1: Date of Birth or Gender not Match
+2: Duplicate SID Possibility
+3: Error due to duplicated SID received from SID Generator
+4: NIK Not Found in Dukcapil Online
+end note
+deactivate dfs
+activate kafka
+kafka --> ms: consume registration status
+activate ms
+ms -> db: Update accounts collection
+note right
+crn: String <- crn
+cif: String <- cif
+status: REGISTERED/VERIFYING/UNREGISTERED/FAILED
+sid: String <- sid
+investorAccountNumber: String <- investorAccountNumber
+statusCode: String <- bondsAccountStatusCode
+failReason: String <- bondsAccountStatusFailReason
+modifiedAt: ISODate
+end note
+deactivate ms
+deactivate kafka
+
+@enduml

@@ -1,0 +1,81 @@
+@startuml products
+participant "Additiv\nDFS" as dfs
+queue "BTPN\nKafka" as kafka
+participant "BTPN\nJenius Microservices" as ms
+collections "DB Investment" as db
+
+activate dfs
+dfs -> kafka: Publish every product data\nevery day at 10.00\nID.DFS.BONDS.PRODUCT.CATALOG
+note left
+Id: 1
+ProductCode: "FR89"
+Name: "FR 0089"
+Image: "image/fr0089.png"
+AssetClass: "SecondaryMarket"
+Type: "Conventional"
+Feature: "Tradable"
+Currency: "IDR"
+ISIN: "ID1202193"
+FundHouseCode: "EC001"
+FundHouseName: "Ministry of Finance"
+CustodianBankCode: "C43"
+CustodianBankName: "Bank Central Asia"
+CouponRate: "12%"
+BuyPrice: "102.5%"
+BuyPriceDate: "2022-06-15"
+SellPrice: "102.5%"
+SellPriceDate: "2022-06-15"
+YieldToMaturity: "6.9%"
+Maturity: "1 Year"
+MinimumBuy: 50100200
+AllowBuy: true
+AllowTopup: true
+AllowSell: true
+Display: true
+RiskCategory: "4"
+CouponPayment: "Every 15/01 and 15/12"
+MaturityDate: "2042-06-15"
+Quota: 522
+MinimumBuyMultiplication: 5100100
+ProspectusDocumentId: 12
+CouponTax: "11%"
+CustodianFee: "1%"
+StampDutyFee: 10100
+AccrualCoupon: 10100200
+Value1D: "103%"
+Date1D: "2022-06-14"
+Value3D: "101%"
+Date3D: "2022-06-12"
+Value7D: "109%"
+Date7D: "2022-06-06"
+Value14D: "109%"
+Date14D: "2022-06-01"
+Value1M: "99%"
+Date1M: "2022-05-15"
+Value3M: "98%"
+Date3M: "2022-03-15"
+Value1Y: "98%"
+Date1Y: "2021-06-15"
+ValueYTD: "98%"
+DateYTD: "2021-06-15"
+Value3Y: "98%"
+Date3Y: "2019-06-15"
+Value5Y: "98%"
+Date5Y: "2017-06-15"
+end note
+deactivate dfs
+activate kafka
+kafka --> ms: consume product list\nmap and insert to database
+deactivate kafka
+activate ms
+ms -> db: Upsert to activeProducts
+note right
+mapped data from kafka
+prospectusUri: "dfs/{ProspectusDocumentId}"
+imageUri: "assets/image/{Image}"
+modifiedAt: current date
+createdAt: inserted date
+end note
+deactivate ms
+
+@enduml

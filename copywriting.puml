@@ -1,0 +1,31 @@
+@startuml copywriting
+
+participant "App" as app
+participant "ms-investment" as ms
+collections "DB investment\ncontents" as db
+
+activate app
+app -> app: get from redux by key
+
+alt if not exists
+app -> ms ++: query investmentContents
+note right
+query investmentContents(keys: [String], language: String){
+    key: String!
+    language: String (en/id)
+    content: String!
+    contentType: String! (TEXT/MARKDOWN/URI)
+    version: Int!
+    createdAt: Date!
+    expiry: Int (hours or seconds)
+}
+end note
+ms -> db ++: Query by keys and/or language
+return content(s)
+return content(s)
+app -> app: set to redux
+app -> app: persist with redux\nset expiry
+
+end
+
+deactivate app

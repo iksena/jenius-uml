@@ -1,0 +1,109 @@
+@startuml transactions
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+collections "DB Investment\nTransaction" as db
+queue "BTPN\nKafka" as kafka
+participant "Additiv\nDFS" as dfs
+participant "BK BCA\nS-Invest" as ksei
+
+activate app
+app -> ms: GraphQL query\ncreateInvestmentTransaction
+note right
+createInvestmentTransaction(input: CreateInvestmentTransactionInput!) {
+  status: String
+}
+input CreateInvestmentTransactionInput {
+  forecastChecksum: String!
+}
+end note
+
+activate ms
+ms -> kafka: Publish to Kafka\nID.DFS.BONDS.TRANSACTION.REQUEST
+activate kafka
+note right
+{
+  "cif": "1234A0",
+  "type": "Buy",
+  "accountNumber": "90018128323"
+  "productId": 12
+  "amount": 100100
+  "isRedeemAll": false
+  "referenceNo": "ASDFGH123456"
+}
+end note
+ms -> db: Save to database\ninflightTransaction
+note right
+mapped data from forecast
+end note
+ms --> app: response transaction accepted
+deactivate ms
+deactivate app
+
+kafka --> dfs: consume transaction request
+deactivate kafka
+
+dfs -> kafka: publish status VERIFIED transaction\nID.DFS.BONDS.TRANSACTION.STATUS
+note left
+{
+  "CIF": "String",
+  "Channel": "Jenius"
+  "Status": "Verified/Settled/Failed"
+  "SInvestRejectionReason": ""
+  "ReferenceNumber": "String - 12 chars",
+  "ProductCode": "String - 6 or more chars",
+  "ProductId": "String",
+  "TransactionCategory": "Buy/Sell",
+  "TransactionDate": "ISODate",
+  "SettlementDate": "ISODate",
+  "Amount": Number,
+  "BuyPriceRate": "String",
+  "BuyPrice": Number,
+  "TotalAmount": Number,
+  "AccrualCouponAmount": Number,
+  "AccrualCouponTaxAmount": Number,
+  "StampDutyFeeAmount": Number,
+  "IsRedeemAll": Boolean,
+  "Messages": "String",
+  "ErrorCode": "0000"
+  "PortfolioId": 12
+  "TransactionId": 123
+}
+end note
+activate kafka
+kafka --> ms: consume VERIFIED status
+activate ms
+deactivate kafka
+ms -> db: Update database\ninflightTransaction
+note right
+mapped from inflight data
+mapped from kafka
+end note
+deactivate ms
+
+opt If transaction failed
+
+dfs -> dfs: PTWS,system,orKSEI will reject/cancel transaction
+dfs -> kafka: publish status FAILED transaction\nto ID.JENIUS.INVESTMENT.TRANSACTION.STATUS
+activate kafka
+kafka --> ms: consume FAILED status
+deactivate kafka
+activate ms
+ms -> db: Update database\ninflightTransaction
+deactivate ms
+
+end opt
+
+
+dfs -> dfs: PTWS/Operation Staffs approve transactions\nby updating current NAV
+dfs -> ksei: Report transaction to KSEI
+dfs -> kafka: publish status SETTLED transaction\nto ID.DFS.BONDS.TRANSACTION.STATUS
+activate kafka
+kafka --> ms: consume SETTLED status
+deactivate kafka
+activate ms
+ms -> db: Update database\ninflightTransaction
+deactivate ms
+
+deactivate dfs
+
+@enduml
