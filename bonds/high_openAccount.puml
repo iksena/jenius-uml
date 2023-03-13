@@ -36,28 +36,35 @@ motherName
 spouseName
 education
 occupation
-professionIndustry
+occupationIndustry
 income
 sourceOfIncome
 investmentObjective
-idCardAddress.address
+idCardAddress.address1
+idCardAddress.address2
+idCardAddress.address3
 idCardAddress.city
 idCardAddress.zipcode
-malingAddress.address
+malingAddress.address1
+malingAddress.address2
+malingAddress.address3
 malingAddress.city
 malingAddress.zipcode
 bankAccounts[0].currency
 bankAccounts[0].accountNumber
-bankAccounts[0].beneficiaryName
 bankAccounts[0].bicCode
+bankAccounts[0].branchCode
+bankAccounts[0].branchName
 bankAccounts[1].currency
 bankAccounts[1].accountNumber
-bankAccounts[1].beneficiaryName
 bankAccounts[1].bicCode
+bankAccounts[1].branchCode
+bankAccounts[1].branchName
 bankAccounts[2].currency
 bankAccounts[2].accountNumber
-bankAccounts[2].beneficiaryName
 bankAccounts[2].bicCode
+bankAccounts[2].branchCode
+bankAccounts[2].branchName
 end note
 activate kafka
 ms --> app: response request accepted
@@ -68,24 +75,29 @@ deactivate kafka
 activate dfs
 dfs -> ksei: validate and send customer registration
 activate ksei
-ksei --> dfs: return SID 
+ksei --> dfs: return SID and AID
 deactivate ksei
 dfs -> kafka: Publish response customer registration\nID.DFS.BONDS.ACCOUNT.RESPONSE
 note left
 {
-  "crn": "0000Y3",
-  "cif": "0000Y3",
-  "sid": "IDD1604K7688567",
-  "investorAccountNumber": "IDD1604K7688567",
-  "custodianBankCode": "ID1",
-  "bondsAccountStatusCode": "Success",
-  "bondsAccountStatusFailReason": "reason received from BK BCA",
+  "CRN": "010000Y3",
+  "CIF": "0000Y3",
+  "SID": "IDD1604K7688567",
+  "AID": "IDD1604K7688567",
+  "CustodianBankCode": "ID1",
+  "RiskProfileStatusCode":1, 
+  "RiskProfileName":"Konservatif", 
+  "RiskProfileExpiryDate":"2023-09-07T00:00:00", 
+  "BondsAccountStatusCode": "Success",
+  "BondsAccountStatusFailReason": "reason from BK BCA",
 }
-bondsAccountStatusFailReason error from KSEI:
-1: Date of Birth or Gender not Match
-2: Duplicate SID Possibility
-3: Error due to duplicated SID received from SID Generator
-4: NIK Not Found in Dukcapil Online
+bondsAccountStatusCode list:
+IdCardNotFound
+DobGenderNotMatch
+NameNotMatch
+SidDuplicated
+SidAlreadyRegistered
+Other
 end note
 deactivate dfs
 activate kafka
@@ -97,7 +109,7 @@ crn: String <- crn
 cif: String <- cif
 status: REGISTERED/VERIFYING/UNREGISTERED/FAILED
 sid: String <- sid
-investorAccountNumber: String <- investorAccountNumber
+aid: String <- aid
 statusCode: String <- bondsAccountStatusCode
 failReason: String <- bondsAccountStatusFailReason
 modifiedAt: ISODate

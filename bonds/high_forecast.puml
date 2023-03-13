@@ -1,0 +1,83 @@
+@startuml forecast bonds
+participant "Apps" as app
+participant "BTPN\nJenius Microservices" as ms
+collections "DB Investment\nTransaction" as db
+participant "Additiv\nDFS" as dfs
+
+activate app
+app -> ms: GraphQL query\nforecastBondsTransactions
+note left
+forecastBondsTransactions(input: ForecastBondsTransactionInput!) {
+  checksum: String
+}
+input ForecastBondsTransactionInput {
+  currency: String!
+  productIsin: String!
+  type: String!
+  amount: Int
+  isRedeemAll: Boolean
+}
+end note
+activate ms
+ms -> dfs: POST /bonds-transaction/validate
+note left
+{
+    CashAccountNumber: String
+    Transactions: [
+        {
+            ProductIsin: String
+            ProductCurrency: IDR
+            TransactionCategory: Buy/Sell
+            InvestmentAmount: Number
+            IsRedeemAll: Boolean
+        }
+    ]
+}
+end note
+activate dfs
+dfs --> ms: return forecast response
+note right
+Status: Enum
+Result: {
+    CIF: String
+    Transactions: [{
+        BuyAmount: Number
+        BuyPriceRate: String
+        InvestmentAmount: Number
+        AccrualCouponAmount: Number
+        StampDutyFeeAmount: Number
+        CustodianFeeAmount: Number
+        TaxValue: String
+        TaxAmount: Number
+        ProductIsin: String
+        ProductCurrency: IDR
+        TransactionCategory: Buy/Sell
+    }]
+}
+enum Status:
+Success
+InsufficientCashAccountBalance
+InvalidCashAccount
+InvalidCif
+InsufficientMinimumBuyAmount
+InsufficientMinimumRemainingUnitsAfterSell
+InsufficientMinimumSellUnits
+NonInvestableInstrument
+BuyNotAllowed
+InvalidCashAccountCurrency
+InsufficientSellAmount
+end note
+deactivate dfs
+ms -> db: Save to database\nforecasts
+note right
+mapped data from response
+referenceNo: String <- generated
+createdAt: Date
+modifiedAt: Date
+expiredAt: Date <- current date +10mins
+end note
+ms --> app: return forecast response by query
+deactivate ms
+deactivate app
+
+@enduml

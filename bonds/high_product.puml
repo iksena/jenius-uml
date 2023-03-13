@@ -5,77 +5,99 @@ participant "BTPN\nJenius Microservices" as ms
 collections "DB Investment" as db
 
 activate dfs
-dfs -> kafka: Publish every product data\nevery day at 10.00\nID.DFS.BONDS.PRODUCT.CATALOG
-note left
-Id: 1
+dfs -> kafka: Publish every product data\nevery day at 10.00 and every changes to the product\nID.DFS.BONDS.PRODUCT.EVENTS
+note left of dfs
+EventId: UUID
+ActionType: Create
+EventType: ProductAdded
 ProductCode: "FR89"
-Name: "FR 0089"
-Image: "image/fr0089.png"
-AssetClass: "SecondaryMarket"
-Type: "Conventional"
-Feature: "Tradable"
-Currency: "IDR"
-ISIN: "ID1202193"
-FundHouseCode: "EC001"
-FundHouseName: "Ministry of Finance"
-CustodianBankCode: "C43"
-CustodianBankName: "Bank Central Asia"
-CouponRate: "12%"
-BuyPrice: "102.5%"
-BuyPriceDate: "2022-06-15"
-SellPrice: "102.5%"
-SellPriceDate: "2022-06-15"
-YieldToMaturity: "6.9%"
-Maturity: "1 Year"
-MinimumBuy: 50100200
-AllowBuy: true
-AllowTopup: true
-AllowSell: true
-Display: true
-RiskCategory: "4"
-CouponPayment: "Every 15/01 and 15/12"
-MaturityDate: "2042-06-15"
-Quota: 522
-MinimumBuyMultiplication: 5100100
-ProspectusDocumentId: 12
-CouponTax: "11%"
-CustodianFee: "1%"
-StampDutyFee: 10100
-AccrualCoupon: 10100200
-Value1D: "103%"
-Date1D: "2022-06-14"
-Value3D: "101%"
-Date3D: "2022-06-12"
-Value7D: "109%"
-Date7D: "2022-06-06"
-Value14D: "109%"
-Date14D: "2022-06-01"
-Value1M: "99%"
-Date1M: "2022-05-15"
-Value3M: "98%"
-Date3M: "2022-03-15"
-Value1Y: "98%"
-Date1Y: "2021-06-15"
-ValueYTD: "98%"
-DateYTD: "2021-06-15"
-Value3Y: "98%"
-Date3Y: "2019-06-15"
-Value5Y: "98%"
-Date5Y: "2017-06-15"
+ProductId: 1
+Payload: Object (based on EventType)
+Timestamp: ISODate
+Data:
+    Name: "FR 0089"
+    AssetClass: "SecondaryMarket"
+    IsSharia: false
+    Feature: "Tradable"
+    Currency: "IDR"
+    ISIN: "ID1202193"
+    IssuerType: "Government"
+    CustodianBankCode: "C43"
+    CustodianBankName: "Bank Central Asia"
+    CouponRate: "12%"
+    BuyPrice: "102.5%"
+    BuyPriceDate: "2022-06-15"
+    SellPrice: "101.5%"
+    SellPriceDate: "2022-06-15"
+    BuyQuota: 500100100100
+    SellQuota: 500100100100
+    MinimumBuy: 50100200
+    AllowBuy: true
+    MinimumBuyMultiplication: 5100100
+    MinimumSellMultiplication: 5100100
+    MinimumBalanceAfterSell: 10100100
+    Display: true
+    RiskCategory: "4"
+    CouponPaymentDays: [
+        "15/06",
+        "15/12"
+    ]
+    YieldToMaturity: "6.9%"
+    MaturityDate: "2043-06-15"
+    Maturity: "20Y"
+    ProspectusDocumentId: 12
+    CouponTax: "11%"
+    CustodianFee: "1%"
+    StampDutyFee: 10100
+    Returns1D: "4.3%"
+    Date1D: "2022-06-14"
+    Returns3D: "4.1%"
+    Date3D: "2022-06-12"
+    Returns7D: "4.9%"
+    Date7D: "2022-06-06"
+    Returns14D: "4.9%"
+    Date14D: "2022-06-01"
+    Returns1M: "3.9%"
+    Date1M: "2022-05-15"
+    Returns3M: "3.8%"
+    Date3M: "2022-03-15"
+    Returns1Y: "3.8%"
+    Date1Y: "2021-06-15"
+    ReturnsYTD: "3.8%"
+    DateYTD: "2021-06-15"
+    Returns3Y: "3.8%"
+    Date3Y: "2019-06-15"
+    Returns5Y: "3.8%"
+    Date5Y: "2017-06-15"
+end note
+note left of dfs
+ActionType: Create/Update/Delete
+EventType and payload
+- NewProductAdded (payload: name)
+- QuotaChangedByUserPurchase (payload: cif, amount, referenceNo)
+- QuotaChangedByUserSale (payload: cif, amount, referenceNo)
+- ProductQuotaAdded (payload: amount)
+- AvailibilityChanged (payload: display, allowBuy)
+- PriceChanged (payload: buyPrice, sellPrice)
+- ConfigurationChanged (payload: any other data)
+- ProductDeleted
 end note
 deactivate dfs
 activate kafka
 kafka --> ms: consume product list\nmap and insert to database
 deactivate kafka
 activate ms
-ms -> db: Upsert to activeProducts
+ms -> db: Upsert to products
 note right
 mapped data from kafka
 prospectusUri: "dfs/{ProspectusDocumentId}"
 imageUri: "assets/image/{Image}"
 modifiedAt: current date
 createdAt: inserted date
+deletedAt: date of deletion
+expiredAt: current date + 1 month
 end note
+ms -> db: insert to events
 deactivate ms
 
 @enduml

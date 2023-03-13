@@ -22,13 +22,17 @@ ms -> kafka: Publish to Kafka\nID.DFS.BONDS.TRANSACTION.REQUEST
 activate kafka
 note right
 {
-  "cif": "1234A0",
-  "type": "Buy",
-  "accountNumber": "90018128323"
-  "productId": 12
-  "amount": 100100
-  "isRedeemAll": false
-  "referenceNo": "ASDFGH123456"
+  "CIF": "011AIR98",
+  "CashAccountNumber": "00193000061",
+  "ReferenceNumber": "XXXX1XX1"
+  "Transactions": [{
+    "ProductIsin": "IDG000015108",
+    "ProductCurrency": "IDR",
+    "TransactionCategory": "Buy", 
+    "InvestmentAmount": 0,
+    "Units": 100,
+    "IsRedeemAll": false
+  }]
 }
 end note
 ms -> db: Save to database\ninflightTransaction
@@ -82,7 +86,7 @@ deactivate ms
 
 opt If transaction failed
 
-dfs -> dfs: PTWS,system,orKSEI will reject/cancel transaction
+dfs -> dfs: Operation,system,or KSEI will reject/cancel transaction
 dfs -> kafka: publish status FAILED transaction\nto ID.JENIUS.INVESTMENT.TRANSACTION.STATUS
 activate kafka
 kafka --> ms: consume FAILED status
@@ -94,7 +98,7 @@ deactivate ms
 end opt
 
 
-dfs -> dfs: PTWS/Operation Staffs approve transactions\nby updating current NAV
+dfs -> dfs: Treasury/Operation approve transactions
 dfs -> ksei: Report transaction to KSEI
 dfs -> kafka: publish status SETTLED transaction\nto ID.DFS.BONDS.TRANSACTION.STATUS
 activate kafka
