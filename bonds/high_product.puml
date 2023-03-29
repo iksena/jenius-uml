@@ -1,5 +1,5 @@
 @startuml products
-participant "Additiv\nDFS" as dfs
+participant "WMS" as dfs
 queue "BTPN\nKafka" as kafka
 participant "BTPN\nJenius Microservices" as ms
 collections "DB Investment" as db
@@ -12,11 +12,10 @@ ActionType: Create
 EventType: ProductAdded
 ProductCode: "FR89"
 ProductId: 1
-Payload: Object (based on EventType)
 Timestamp: ISODate
-Data:
+Payload:
     Name: "FR 0089"
-    AssetClass: "SecondaryMarket"
+    AssetClass: "SecondaryBonds"
     IsSharia: false
     Feature: "Tradable"
     Currency: "IDR"
@@ -33,6 +32,7 @@ Data:
     SellQuota: 500100100100
     MinimumBuy: 50100200
     AllowBuy: true
+    AllowSell: true
     MinimumBuyMultiplication: 5100100
     MinimumSellMultiplication: 5100100
     MinimumBalanceAfterSell: 10100100
@@ -73,12 +73,12 @@ end note
 note left of dfs
 ActionType: Create/Update/Delete
 EventType and payload
-- NewProductAdded (payload: name)
+- NewProductAdded (payload: all of data)
 - QuotaChangedByUserPurchase (payload: cif, amount, referenceNo)
 - QuotaChangedByUserSale (payload: cif, amount, referenceNo)
 - ProductQuotaAdded (payload: amount)
 - AvailibilityChanged (payload: display, allowBuy)
-- PriceChanged (payload: buyPrice, sellPrice)
+- PriceChanged (payload: buyPrice, sellPrice, returns)
 - ConfigurationChanged (payload: any other data)
 - ProductDeleted
 end note
