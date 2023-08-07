@@ -1,0 +1,43 @@
+@startuml boBannerExisting
+participant "MA(DBANKPRO)" as ma
+participant "MS(Sysparam)" as sp
+participant "MS(Dashboard)" as ms
+collections "Redis" as redis
+
+activate ma
+note over ma
+Login NTB Banners
+end note
+ma -> sp: Get System Parameter
+activate sp
+return System Parameter response
+deactivate sp
+ma -> ma: Save NTB banner to local storage\nNTB_MOBILE_BANNER_DETALS
+
+opt if user not active (NTB)
+ma -> ma: Show Login NTB Banners
+end
+opt if user active (ETB) &&\nlocal storage USER_BANNER_DETALS exists
+ma -> ma: Show Login ETB Banners
+end
+
+ma -> ma: Login and Navigate to Dashboard
+
+note over ma
+Dashboard Banners
+end note
+ma -> ms: Get Dashboard Banners /promoContent
+activate ms
+return Dashboard Banners response
+ma -> ma: Show Dashboard Banners
+deactivate ms
+
+note over ma
+Login ETB Banners (mobile)
+end note
+ma -> ms: Get Login ETB Banners /loginContent
+activate ms
+return Login ETB Banners response
+deactivate ms
+ma -> ma: Save ETB banner to local storage\nUSER_BANNER_DETALS
+deactivate ma

@@ -1,0 +1,50 @@
+@startuml boBannerDev
+participant "MA(DBANKPRO)" as ma
+participant "MS(Banner)" as ms
+collections "Redis" as redis
+participant "Strapi" as strapi
+
+activate strapi
+strapi -> ms: Publish Banners
+activate ms
+ms -> redis: Refresh cached banners
+deactivate ms
+deactivate strapi
+
+activate ma
+note over ma
+Login Banners
+end note
+ma -> ms: Get Login Banners
+activate ms
+ms -> redis: Get cached login banners
+opt if login banners not cached
+ms -> strapi: Get login banners
+ms -> redis: Refresh login banners
+end
+return Login Banners response
+deactivate ms
+
+alt if user active (ETB)
+ma -> ma: Show Login ETB Banners
+else user not active (NTB)
+ma -> ma: Show Login NTB Banners
+end
+
+ma -> ma: Login and Navigate to Dashboard
+
+note over ma
+Dashboard Banners
+end note
+ma -> ms: Get Dashboard Banners 
+activate ms
+ms -> redis: Get cached dashboard banners
+opt if dashboard banners not cached
+ms -> strapi: Get dashboard banners
+ms -> redis: Refresh dashboard banners
+end
+return Dashboard Banners response
+ma -> ma: Show Dashboard Banners
+deactivate ms
+
+deactivate ma

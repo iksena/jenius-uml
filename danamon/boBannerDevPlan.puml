@@ -1,0 +1,65 @@
+@startuml boBannerPlan
+participant "MA(DBANKPRO)" as ma
+participant "MS(Dashboard)" as ms
+collections "OMNIDB" as db
+collections "Redis" as redis
+participant "Strapi" as strapi
+
+activate strapi
+strapi -> ms: Publish Banners
+activate ms
+ms -> redis: Refresh cached banners
+ms -> db: Refresh banners and increase version
+deactivate ms
+deactivate strapi
+
+activate ma
+note over ma
+Login page
+end note
+ma -> ms: Get Login NTB Banners\nwith saved version
+activate ms
+ms -> redis: Get cached login banners
+opt if redis not exists
+ms -> db: Query login NTB banners
+end
+return Login Banners response
+deactivate ms
+opt if version increased
+ma -> ma: Save NTB banner to local storage\n__NTB_MOBILE_BANNER_DETALS__
+end
+
+alt if inactive user (NTB)
+ma -> ma: Show Login NTB Banners
+else if active user (ETB) AND\nlocal storage exists with key __USER_BANNER_DETALS__
+ma -> ma: Show Login ETB Banners
+end
+
+ma -> ma: Login and Navigate to Dashboard
+
+note over ma
+Dashboard page
+end note
+ma -> ms: Get Dashboard Banners /promoContent
+activate ms
+ms -> redis: Get cached dashboard banners
+opt if redis not exists
+ms -> db: Query dashboard banners
+end
+return Dashboard Banners response
+ma -> ma: Show Dashboard Banners
+deactivate ms
+
+ma -> ms: Get Login ETB Banners /loginContent\n//isMobileDevice=true//
+activate ms
+ms -> redis: Get cached login ETB banners
+opt if redis not exists
+ms -> db: Query login ETB banners
+end
+return Login ETB Banners response
+deactivate ms
+opt if version increased
+ma -> ma: Save ETB banner to local storage\n__USER_BANNER_DETALS__
+end
+
+deactivate ma
