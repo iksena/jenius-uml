@@ -1,18 +1,38 @@
 @startuml boBannerPlan
+actor "User" as user
 participant "MA(DBANKPRO)" as ma
 participant "MS(Dashboard)" as ms
-collections "OMNIDB" as db
+database "OMNIDB" as db
 collections "Redis" as redis
 participant "Strapi" as strapi
+participant "DCW" as dcw
+actor "Admin Maker" as maker
+actor "Admin Checker" as checker
 
+activate maker
+maker -> dcw: Upload banner image
+activate dcw
+return imageURL
+deactivate dcw
+maker -> strapi: Create/manage banner
+deactivate maker
 activate strapi
-strapi -> ms: Publish Banners
+
+activate checker
+checker -> strapi: Publish banner changes
+deactivate checker
+
+strapi -> ms: Webhook publish banners\nAPI /deleteCache
 activate ms
+ms -> strapi: Get all banners
+strapi --> ms: Response banners data and order
+deactivate strapi
 ms -> redis: Refresh cached banners
 ms -> db: Refresh banners and increase version
 deactivate ms
-deactivate strapi
 
+activate user
+user -> ma: Open login page
 activate ma
 note over ma
 Login page
@@ -30,12 +50,12 @@ ma -> ma: Save NTB banner to local storage\n__NTB_MOBILE_BANNER_DETALS__
 end
 
 alt if inactive user (NTB)
-ma -> ma: Show Login NTB Banners
+ma --> user: Show Login NTB Banners
 else if active user (ETB) AND\nlocal storage exists with key __USER_BANNER_DETALS__
-ma -> ma: Show Login ETB Banners
+ma --> user: Show Login ETB Banners
 end
 
-ma -> ma: Login and Navigate to Dashboard
+user -> ma: Login and Navigate to Dashboard
 
 note over ma
 Dashboard page
@@ -47,7 +67,7 @@ opt if redis not exists
 ms -> db: Query dashboard banners
 end
 return Dashboard Banners response
-ma -> ma: Show Dashboard Banners
+ma --> user: Show Dashboard Banners
 deactivate ms
 
 ma -> ms: Get Login ETB Banners /loginContent\n//isMobileDevice=true//
@@ -63,3 +83,4 @@ ma -> ma: Save ETB banner to local storage\n__USER_BANNER_DETALS__
 end
 
 deactivate ma
+deactivate user
