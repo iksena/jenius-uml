@@ -2,8 +2,9 @@
 actor "User" as user
 participant "MA(DBANKPRO)" as ma
 participant "MS(Dashboard)" as ms
-database "OMNIDB" as db
 collections "Redis" as redis
+database "OMNIDB" as db
+participant "MS(Banner)" as msb
 participant "Strapi" as strapi
 participant "DCW" as dcw
 actor "Admin Maker" as maker
@@ -22,14 +23,14 @@ activate checker
 checker -> strapi: Publish banner changes
 deactivate checker
 
-strapi -> ms: Webhook publish banners\nAPI /deleteCache
-activate ms
-ms -> strapi: Get all banners
-strapi --> ms: Response banners data and order
+strapi -> msb: Webhook publish banners\nAPI /deleteCache
+activate msb
+msb -> strapi: Get all banners
+strapi --> msb: Response banners data and order
 deactivate strapi
-ms -> redis: Refresh cached banners
-ms -> db: Refresh banners and increase version
-deactivate ms
+msb -> redis: Refresh banners cache
+msb -> db: Refresh banners and increase version
+deactivate msb
 
 activate user
 user -> ma: Open login page
@@ -42,6 +43,7 @@ activate ms
 ms -> redis: Get cached login banners
 opt if redis not exists
 ms -> db: Query login NTB banners
+ms -> redis: Refresh banners cache
 end
 return Login Banners response
 deactivate ms
@@ -65,6 +67,7 @@ activate ms
 ms -> redis: Get cached dashboard banners
 opt if redis not exists
 ms -> db: Query dashboard banners
+ms -> redis: Refresh banners cache
 end
 return Dashboard Banners response
 ma --> user: Show Dashboard Banners
@@ -75,6 +78,7 @@ activate ms
 ms -> redis: Get cached login ETB banners
 opt if redis not exists
 ms -> db: Query login ETB banners
+ms -> redis: Refresh banners cache
 end
 return Login ETB Banners response
 deactivate ms
