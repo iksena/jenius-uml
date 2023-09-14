@@ -22,7 +22,7 @@ opt if login banners not cached
 ms -> strapi: Get login banners
 ms -> redis: Refresh login banners
 end
-return Login Banners response
+return Login Banners response (NTB and ETB)
 deactivate ms
 
 alt if user active (ETB)

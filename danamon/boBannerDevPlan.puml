@@ -51,6 +51,19 @@ opt if version increased
 ma -> ma: Save NTB banner to local storage\n__NTB_MOBILE_BANNER_DETALS__
 end
 
+ma -> ms: Get Login ETB Banners /loginContent\nif //isMobileDevice true && userId exists//
+activate ms
+ms -> redis: Get cached login ETB banners
+opt if redis not exists
+ms -> db: Query login ETB banners
+ms -> redis: Refresh banners cache
+end
+return Login ETB Banners response
+deactivate ms
+opt if version increased
+ma -> ma: Save ETB banner to local storage\n__USER_BANNER_DETALS__
+end
+
 alt if inactive user (NTB)
 ma --> user: Show Login NTB Banners
 else if active user (ETB) AND\nlocal storage exists with key __USER_BANNER_DETALS__
@@ -72,19 +85,6 @@ end
 return Dashboard Banners response
 ma --> user: Show Dashboard Banners
 deactivate ms
-
-ma -> ms: Get Login ETB Banners /loginContent\n//isMobileDevice=true//
-activate ms
-ms -> redis: Get cached login ETB banners
-opt if redis not exists
-ms -> db: Query login ETB banners
-ms -> redis: Refresh banners cache
-end
-return Login ETB Banners response
-deactivate ms
-opt if version increased
-ma -> ma: Save ETB banner to local storage\n__USER_BANNER_DETALS__
-end
 
 deactivate ma
 deactivate user
