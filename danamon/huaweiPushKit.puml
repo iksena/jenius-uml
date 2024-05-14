@@ -1,0 +1,34 @@
+@startuml huawei push notification
+participant "MA(DBankPRO)" as ma
+participant "Huawei\nMobile Services" as hms
+participant "Firebase\nCloud Messaging" as fcm
+participant "APIGW" as apigw
+participant "MS Push Notification" as ms
+
+activate ma
+ma -> hms: Activate HMS PushKit (if Huawei)
+activate hms
+return push notification client Huawei active
+deactivate hms
+ma -> fcm: Activate FCM push notification (if not Huawei)
+activate fcm
+return push notification client Firebase active
+deactivate fcm
+
+ma -> apigw: create any transaction
+activate apigw
+apigw -> apigw: process transaction to any ms
+apigw -> ms: create notification from any ms
+deactivate apigw
+activate ms
+ms -> fcm: create push notification
+activate fcm
+fcm -> ma: push notification to active client
+deactivate fcm
+ms -> hms: create push notification
+deactivate ms
+activate hms
+hms -> ma: push notification to active client
+deactivate hms
+
+deactivate ma

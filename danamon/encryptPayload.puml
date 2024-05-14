@@ -1,0 +1,13 @@
+@startuml encryptpayload
+start
+:**processEncryptionParameter()**
+read publicKey
+broadcastServiceInfo (RSA, hashIndex);
+:generateEncryption()
+broadcastServiceInfo (I_K, I_I);
+:generateEncryptedAESKey();
+:encryptAESKey(I_K, I_I)
+using JsEncryptModule.JSEncrypt;
+:broadcastServiceInfo (J_K);
+stop
+@enduml
