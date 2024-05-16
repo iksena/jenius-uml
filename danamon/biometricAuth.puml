@@ -1,0 +1,161 @@
+@startuml biometric authentication
+participant "LoginComponent" as lc
+participant "LoginService" as ls
+participant "CoreService" as core
+participant "Fingerprint SDK" as fs
+participant "NativeStorage" as storage
+participant "CommunicationService" as comm
+participant "SoftTokenService" as sts
+participant "SoftTokenPrepService" as stps
+participant "SoftTokenSDK" as sdk
+participant "APIGW" as apigw
+
+activate lc
+lc -> lc: biometricShowModal()
+lc -> ls: checkBiometricAvailable()
+activate ls
+ls -> core: checkBiometricAvailable()
+activate core
+core -> fs: Fingerprint.isAvailable()
+activate fs
+fs --> core: return "touch" or "face"
+deactivate fs
+core --> ls: return
+deactivate core
+ls --> lc: return
+deactivate ls
+lc -> ls: storeBioMetricType(result)
+activate ls
+ls -> storage: put **bioMetricType**
+activate storage
+ls -> storage: get **isBiometricActivated**
+storage --> ls: isBiometricActivated
+deactivate storage
+ls --> lc: isBiometricActivated
+deactivate ls
+lc -> lc: biometricTimer()
+lc -> lc: showBiometric()
+lc -> ls: showBiometric(loadSecret)
+activate ls
+ls -> core: showBiometric(options)
+activate core
+core -> fs: Fingerprint.show(params)
+activate fs
+fs --> core: return loadSecretResult
+deactivate fs
+core --> ls: return
+deactivate core
+ls --> lc: return
+deactivate ls
+lc -> lc: biometricVerification(info)
+lc -> lc: getBioMetricChallengeGenerationRequestData(info)
+lc -> comm: getBioMetricChallengeGenerationRequestData
+activate comm
+comm -> sts: getBioMetricChallengeGenerationRequestData\npayload: biometricType
+deactivate comm
+activate sts
+sts -> stps: getRequiredDataForBioMetric()
+activate stps
+stps -> stps: loadSoftTokenScript()
+stps -> stps: deviceInfoService.getDeviceInfo()
+stps -> stps: getAppId()
+stps -> stps: getUserInfo()
+stps -> stps: getBioMetricData()\nreturn StaticVectors, BiometricToken, PIN
+stps --> sts: biometricData
+deactivate stps
+sts -> sts: generate sessionId and transactionId
+sts -> sdk: getBioMetricChallengeGenerationRequestData(params)
+activate sdk
+sdk --> sts: response
+deactivate sdk
+sts -> comm: publish response\nwith sessionId and transactionId
+deactivate sts
+activate comm
+lc -> comm: consume response
+deactivate comm
+lc -> ls: getBiometricType(biometricType)
+lc -> storage: get **isBiometricGenerateChallenge**
+lc -> ls: biometricChallengeRequest\npayload data, sessionId, transactionId
+activate ls
+ls -> storage: getUserInfoDataForBiometric
+activate storage
+storage --> ls: return user info
+deactivate storage
+ls -> apigw: POST /BDIOmni/Biometric/api/v1/BiometricUnsecured/Challenge
+activate apigw
+apigw --> ls: response\ndynamicVectors, movingFactor
+deactivate apigw
+ls --> lc: response
+deactivate ls
+lc -> comm: getBioMetricVerificationRequestData\npayload: dynamicVectors, movingFactor
+activate comm
+comm -> sts: getBioMetricVerificationRequestData\npayload: dynamicVectors, movingFactor
+deactivate comm
+activate sts
+sts -> stps: getRequiredDataForBioMetric
+activate stps
+stps -> stps: loadSoftTokenScript()
+stps -> stps: deviceInfoService.getDeviceInfo()
+stps -> stps: getAppId()
+stps -> stps: getUserInfo()
+stps -> stps: getBioMetricData()\nreturn StaticVectors, BiometricToken, PIN
+stps --> sts: biometricData
+sts -> stps: getDynamicVectorInfo()
+stps --> sts: dynamicVectors
+deactivate stps
+sts -> sdk: getBioMetricVerificationRequestData(params)
+activate sdk
+sdk --> sts: response
+deactivate sdk
+sts -> stps: updateMovingFactor(movingFactor)
+sts -> sts: clear sessionId and transactionId in global
+sts -> comm: publish response
+deactivate sts
+activate comm
+lc -> comm: consume response
+deactivate comm
+lc -> lc: gotoBiometricLoginProcess(data)
+lc -> lc: biometricLoginRequest(data)
+lc -> ls: biometricLoginRequest(data, sessionId, transactionId)
+activate ls
+ls -> ls: constructBiometricLoginBodyRequest
+ls -> apigw: POST /BDIOmni/Authentication/api/v1/BiometricLogin
+activate apigw
+apigw --> ls: userData
+deactivate apigw
+ls --> lc: userData
+deactivate ls
+lc -> lc: storeSoftTokenData
+lc -> lc: setAnalytics
+lc -> lc: getPilotingFeatureList
+lc -> storage: put **isBiometricGenerateChallenge**=N
+lc -> comm: go to dashboard/qris/ecommerce
+deactivate lc
+
+' start
+' :**checkBiometricAvailable()**
+' Cordova plugin Fingerprint.isAvailable() -> touch or face;
+' :**storeBioMetricType()**
+' store to NativeStorage;
+' :**showBiometric()**
+' Cordova plugin Fingerprint.show();
+' :**biometricVerification(info)**
+' call getBioMetricChallengeGenerationRequestData(biometricType);
+' :**softTokenDataPrepService.getRequiredDataForBioMetric()**
+' return staticVectors, userId, biometricData, etc as params;
+' :**SoftTokenSDK.getBioMetricChallengeGenerationRequestData(params)**
+' return sessionId and transactionId;
+' :**getBioMetricVerificationRequestData(...)**
+' call prepService getRequiredDataForBioMetric and getDynamicVectorInfo;
+' :**SoftTokenSDK.getBioMetricVerificationRequestData(params)**
+' based on stored sessionId and transactionId
+' return data and movingFactor;
+' :**gotoBiometricLoginProcess(data)**
+' call biometricLoginRequest(data, sessionId, transactionId, registrationToken)
+' call constructBiometricLoginBodyRequest();
+' :**POST /BDIOmni/Authentication/api/v1/BiometricLogin**
+' store accessCode and userData from response
+' getPiloting;
+' :Go to Dashboard;
+' stop
+@enduml

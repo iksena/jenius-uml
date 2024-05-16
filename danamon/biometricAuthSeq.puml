@@ -1,0 +1,28 @@
+@startuml biometric authentication
+start
+:**checkBiometricAvailable()**
+Cordova plugin Fingerprint.isAvailable() -> touch or face;
+:**storeBioMetricType()**
+store to NativeStorage;
+:**showBiometric()**
+Cordova plugin Fingerprint.show();
+:**biometricVerification(info)**
+call getBioMetricChallengeGenerationRequestData(biometricType);
+:**softTokenDataPrepService.getRequiredDataForBioMetric()**
+return staticVectors, userId, biometricData, etc as params;
+:**SoftTokenSDK.getBioMetricChallengeGenerationRequestData(params)**
+return sessionId and transactionId;
+:**getBioMetricVerificationRequestData(...)**
+call prepService getRequiredDataForBioMetric and getDynamicVectorInfo;
+:**SoftTokenSDK.getBioMetricVerificationRequestData(params)**
+based on stored sessionId and transactionId
+return data and movingFactor;
+:**gotoBiometricLoginProcess(data)**
+call biometricLoginRequest(data, sessionId, transactionId, registrationToken)
+call constructBiometricLoginBodyRequest();
+:**POST /BDIOmni/Authentication/api/v1/BiometricLogin**
+store accessCode and userData from response
+getPiloting;
+:Go to Dashboard;
+stop
+@enduml
