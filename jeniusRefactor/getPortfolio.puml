@@ -1,0 +1,84 @@
+@startuml portfolio
+participant "App" as app
+participant "ms-investment" as mi
+collections "Redis\ninvestment" as redis
+collections "DB\nportfolios" as portfolios
+collections "DB\naccounts" as accounts
+collections "DB\nproducts" as products
+participant "ms-forex" as forex
+participant "WMS\nInquiryCustomerPortfolio" as wms
+
+activate app
+app -> mi: GET /portfolios
+note left: show portfolio list
+activate mi
+mi ->  accounts: find account by cif
+opt if UNREGISTERED
+mi -> app: return empty array
+end
+mi -> redis: get portfolios cache by cif
+opt if cache found
+mi -> app: return portfolios from cache
+end
+mi -> wms: GET /InquiryCustomerPortfolio
+mi -> portfolios: query portfolios
+mi -> mi: map portfolios from WMS and database
+opt if goalCode ADH exists in WMS and not in DB
+mi -> portfolios: save ADH portfolio
+end
+
+opt if there are currencies other than IDR
+mi -> redis: Get forexRates
+activate redis
+redis --> mi: return forex rates
+deactivate redis
+
+opt if cache not exist
+mi -> forex: GET /foreign-exchanges/rates
+activate forex
+forex --> mi: return forex rates
+deactivate forex
+mi -> redis: Save forexRates
+end opt if cache not exist
+mi -> mi: map and calculate portfolios with forex
+end opt if there are currencies other than IDR
+
+mi -> redis: save portfolios cache
+mi -> app: return portfolios
+deactivate mi
+
+app -> mi: GET /portfolio/:goalCode
+note left: show portfolio detail
+activate mi
+mi -> redis: get portfolios cache by cif
+opt if found
+mi -> app: return portfolios from cache
+end
+mi -> wms: GET /InquiryCustomerPortfolio
+mi -> portfolios: query portfolios
+mi -> mi: map portfolios from WMS and database
+
+opt if there are currencies other than IDR
+mi -> redis: Get forexRates
+activate redis
+redis --> mi: return forex rates
+deactivate redis
+
+opt if cache not exist
+mi -> forex: GET /foreign-exchanges/rates
+activate forex
+forex --> mi: return forex rates
+deactivate forex
+mi -> redis: Save forexRates
+end opt if cache not exist
+mi -> mi: map and calculate portfolios with forex
+end opt if there are currencies other than IDR
+
+mi -> redis: save portfolios cache
+mi -> products: query all products and investmentManagers
+mi -> mi: map product detail with portfolios
+mi -> app: return portfolio
+deactivate mi
+deactivate app
+
+@enduml

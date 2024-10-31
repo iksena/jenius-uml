@@ -1,0 +1,64 @@
+@startuml bancassurance
+participant "Apps" as app
+participant "ms-portfolio" as ms
+participant "Redis" as redis
+participant "ms-forex" as forex
+participant "WMS" as wms
+participant "DB" as db
+
+activate app
+app -> ms: GraphQL query bancassurance
+note right
+assets {
+  bancassurance {
+    total
+    products {
+      originalAmount
+      productName
+      fundName
+      navPerUnitAmount
+      navDate
+      totalUnitCount
+      originalCcyCode
+    }
+  }
+}
+end note
+
+activate ms
+ms -> redis: Get forexRates
+activate redis
+redis --> ms: return forex rates
+deactivate redis
+
+opt if cache not exist
+ms -> forex: GET /foreign-exchanges/rates
+activate forex
+forex --> ms: return forex rates
+deactivate forex
+end opt
+
+ms -> redis: Get by CIF
+activate redis
+redis --> ms: return bancassurance data
+deactivate redis
+
+opt if cache not exist
+ms -> wms: GET /btpnCustomServiceLayer/v1/contacts/{contactId}/portfolio-bancassurance
+activate wms
+wms --> ms: return bancassurance data
+note right
+{
+}
+end note
+deactivate wms
+ms -> ms: transform valid products
+ms -> db: insert bancassurance
+end opt
+
+ms -> ms: calculate total with Jenius forex rates
+ms --> app: return bancassurance
+deactivate ms
+deactivate app
+
+@enduml
